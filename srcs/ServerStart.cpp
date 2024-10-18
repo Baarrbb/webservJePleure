@@ -198,8 +198,8 @@ int	Config::ServerStart(char **envp)
 					this->processClientRequest(poll_fds[i].fd, std::string(s), port);
 					(void)envp;
 					close(poll_fds[i].fd);
-						poll_fds[i] = poll_fds[num_fds - 1]; 
-						num_fds--;
+					poll_fds[i] = poll_fds[num_fds - 1]; 
+					num_fds--;
 					// char buffer[1024];
 					// int bytes_recv = recv(poll_fds[i].fd, buffer, sizeof(buffer), 0); // rec header
 					// if (bytes_recv <= 0)
@@ -237,6 +237,19 @@ int	Config::ServerStart(char **envp)
 					// 	num_fds--;
 					// }
 				}
+			}
+			if (global_variable == 127)
+			{
+				for (int i = 0; i < num_fds; ++i)
+				{
+					if (poll_fds[i].fd != -1)
+        			{
+         				close(poll_fds[i].fd);
+        		    	poll_fds[i].fd = -1;
+       				}
+				}
+				num_fds = 0;
+				return(0);
 			}
 		}
 	}

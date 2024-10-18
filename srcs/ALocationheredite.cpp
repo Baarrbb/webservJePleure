@@ -16,6 +16,7 @@ Location::Location()
 	this->client_body_buffer_size = "";
 	this->error_page = "";
 	this->yipi = std::vector<bool>();
+	this->autoindex = false;
 }
 Location::Location(std::string filename)
 {
@@ -32,6 +33,7 @@ Location::Location(std::string filename)
 	this->client_body_buffer_size = "";
 	this->error_page = "";
 	this->yipi = std::vector<bool>();
+	this->autoindex = false;
 }
 Location::~Location()
 {

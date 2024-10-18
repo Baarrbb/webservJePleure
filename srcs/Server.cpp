@@ -16,6 +16,7 @@ Server::Server()
 	this->cgi_pass = "";
 	this->client_body_buffer_size = "";
 	this->error_page = "";
+	this->autoindex = false;
 }
 /*Server::Server(std::string filename)
 {
@@ -56,6 +57,7 @@ Server & Server::operator = (const Server &copy)
 		this->client_body_buffer_size = copy.client_body_buffer_size;
 		this->error_page = copy.error_page;
 		this->test = copy.test;
+		this->autoindex = copy.autoindex;
 	}
 	return *this;
 }

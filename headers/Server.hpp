@@ -6,6 +6,7 @@ class Location;
 
 #include "Webserv.hpp"
 
+extern int global_variable;
 
 enum Directive {
 	SERVER_NAME,
@@ -20,6 +21,7 @@ enum Directive {
 	END,
 	HOST,
 	DEFAULT_ERROR_PAGE,
+	AUTO_INDEX,
 	NUM_DIRECTIVES
 };
 
@@ -123,6 +125,7 @@ class Server
 		std::string					client_body_buffer_size;
 		int							test;
 		std::vector<bool>			yipi;
+		bool						autoindex;
 
 		bool								IsValidServerName(const std::string& name);
 		bool								IsValidListen();

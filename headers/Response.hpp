@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 17:36:45 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/16 22:57:02 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/19 00:47:41 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class Response
 		std::string	findFile( Location, std::string, int );
 		
 		void	fillLoc(Server serv, Location* loc);
+		void		addCookieValues();
 		
 		
 		void		addBody( std::string );

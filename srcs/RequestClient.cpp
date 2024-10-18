@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   RequestClient.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:45:26 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/16 23:07:37 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/19 00:49:14 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,24 @@ void	printOptions(std::map<std::string, std::string> options);
 // SI PAS ACCEPTE RENVOYER ERREUR 403
 // AVANT DE CHECK SI METHOD EXIST (DONC AVANT ERREUR 405 NOT ALLOWED)
 
+void	RequestClient::takeCookie()
+{
+	/*std::cout << this->options["cookie"] << std::endl;
+	if (!this->options["cookie"].empty())
+	{
+		this->cookie = true;
+		std::ifstream line(this->options["cookie"]);
+
+		
+		return ;
+	}
+	this->cookie = false;
+	return ;*/
+}
+
 RequestClient::RequestClient(std::string &req) : error(0)
 {
+	this->cookie = false;
 	std::cout << std::endl << req << std::endl << std::endl;
 	req.erase(req.length() - 1);
 	std::string line = req.substr(0, req.find("\n"));
@@ -49,6 +65,8 @@ RequestClient::RequestClient(std::string &req) : error(0)
 		return ;
 	}
 
+	if (this->options.find("cookie") != this->options.end())
+		this->cookie = true;
 	std::cout << "method :" + this->method + "." << std::endl;
 	std::cout << "file :" + this->target + "." << std::endl;
 }
@@ -272,9 +290,17 @@ std::map<std::string, std::string>	RequestClient::getOptions( void )
 {
 	return this->options;
 }
+bool	RequestClient::getCookie() const
+{
+	return this->cookie;
+}
 
 // Setters
 
+void	RequestClient::setCookie( bool cond)
+{
+	this->cookie = cond;
+}
 void	RequestClient::setTarget( std::string file )
 {
 	this->target = file;
