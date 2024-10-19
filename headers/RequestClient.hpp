@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   RequestClient.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:41:14 by marvin            #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/10/19 18:30:26 by marvin           ###   ########.fr       */
+=======
+/*   Updated: 2024/10/19 00:48:19 by ersees           ###   ########.fr       */
+>>>>>>> refs/remotes/origin/master
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +32,16 @@ class RequestClient
 		std::string							getHost( void );
 		std::string							getOptions( std::string key );
 		std::map<std::string, std::string>	getOptions( void );
+<<<<<<< HEAD
 		bool								getCookie( void ) const;
 		// std::string							getBody( void );
+=======
+		
+		bool								getCookie() const;
+		void								setCookie( bool );
+		void								takeCookie();
+
+>>>>>>> refs/remotes/origin/master
 
 		void		setTarget( std::string );
 		void		setError( int );
@@ -55,7 +67,10 @@ class RequestClient
 		std::string							query; // jsp si je prends en charge :'(
 		std::map<std::string, std::string>	options;
 		bool								cookie;
+<<<<<<< HEAD
 		// std::string							body;
+=======
+>>>>>>> refs/remotes/origin/master
 
 	public:
 		class ErrorRequest : public std::exception

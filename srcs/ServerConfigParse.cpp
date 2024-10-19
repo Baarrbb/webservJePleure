@@ -69,6 +69,10 @@ static int	OnOrOff(std::istringstream &iss, bool& option)
 {
 	std::string value;
 	std::string end;
+<<<<<<< HEAD
+=======
+
+>>>>>>> refs/remotes/origin/master
 	if (iss >> value)
 	{
 		if (value.compare("on;") == 0)
@@ -210,7 +214,10 @@ int	Server::ProcessDirective(const std::string& line, std::ifstream &file)
 				}
 				break;
 			case AUTO_INDEX:
+<<<<<<< HEAD
 				std::cout << "999999999999999999" << std::endl;
+=======
+>>>>>>> refs/remotes/origin/master
 				if (OnOrOff(iss, this->autoindex) == 0)
 				{
 					throw Server::errors("error in autoindex");

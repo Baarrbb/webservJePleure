@@ -135,6 +135,45 @@ int	Config::ServerStart(char **envp)
 					close(poll_fds[i].fd);
 					poll_fds[i] = poll_fds[num_fds - 1]; 
 					num_fds--;
+<<<<<<< HEAD
+=======
+					// char buffer[1024];
+					// int bytes_recv = recv(poll_fds[i].fd, buffer, sizeof(buffer), 0); // rec header
+					// if (bytes_recv <= 0)
+					// {
+					// 	if (bytes_recv == 0)
+					// 		std::cout << "Client disconnected\n";
+					// 	else
+					// 	{
+					// 		return (1);
+					// 		std::cerr << "recv\n";
+					// 	}
+					// 	close(poll_fds[i].fd);
+					// 	poll_fds[i] = poll_fds[num_fds - 1]; 
+					// 	num_fds--;
+					// }
+					// else if (IsACgi()) //check si la reception est un cgi a faire mais j dois lire des trucs jsp cmt ca mrche
+					// {
+					// 	if (CgiHandling(envp, poll_fds[i].fd) == -1)
+					// 	{
+					// 		return (1);
+					// 	}
+					// 	close(poll_fds[i].fd);
+					// 	poll_fds[i] = poll_fds[num_fds - 1]; 
+					// 	num_fds--;
+					// }
+					// else
+					// {
+					// 	if (send(poll_fds[i].fd, buffer, bytes_recv, 0) == -1)// send header
+					// 	{
+					// 		std::cout << "send" << std::endl;
+					// 		return (1);
+					// 	}
+					// 	close(poll_fds[i].fd);
+					// 	poll_fds[i] = poll_fds[num_fds - 1]; 
+					// 	num_fds--;
+					// }
+>>>>>>> refs/remotes/origin/master
 				}
 			}
 			if (global_variable == 127)
@@ -142,10 +181,17 @@ int	Config::ServerStart(char **envp)
 				for (int i = 0; i < num_fds; ++i)
 				{
 					if (poll_fds[i].fd != -1)
+<<<<<<< HEAD
 					{
 		 				close(poll_fds[i].fd);
 						poll_fds[i].fd = -1;
 					}
+=======
+        			{
+         				close(poll_fds[i].fd);
+        		    	poll_fds[i].fd = -1;
+       				}
+>>>>>>> refs/remotes/origin/master
 				}
 				num_fds = 0;
 				return(0);

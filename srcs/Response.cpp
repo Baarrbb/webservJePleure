@@ -3,14 +3,51 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 18:00:18 by marvin            #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/10/20 01:47:27 by marvin           ###   ########.fr       */
+=======
+/*   Updated: 2024/10/19 00:44:49 by ersees           ###   ########.fr       */
+>>>>>>> refs/remotes/origin/master
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
+#include <ctime>
+
+std::string SessionTokenCreate(size_t length)
+{
+	const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	std::string token;
+	std::srand(static_cast<unsigned int>(std::time(0)));  // Seed the random number generator
+
+	for (size_t i = 0; i < length; ++i)
+	{
+		token += charset[std::rand() % (sizeof(charset) - 1)];
+	}
+	return token;
+}
+
+static void	InitOptionsCookies(std::vector<std::string> &options)
+{
+	options.push_back("session_id");
+	options.push_back("expires");
+	options.push_back("path");
+	options.push_back("HttpOnly");
+	options.push_back("Secure");
+	options.push_back("SameSite");
+}
+
+
+void Response::addCookieValues()
+{
+	std::vector<std::string> options;
+	InitOptionsCookies(options);
+	for (size_t i = 0; i < options.size(); ++i)
+		std::cout << options[i] << std::endl;
+}
 
 // Response::Response( RequestClient req, std::vector<Server*> serv, std::string host, uint16_t port )
 Response::Response( RequestClient req, std::string bodyClient, std::vector<Server*> serv, std::string host, uint16_t port )
@@ -63,7 +100,21 @@ Response::Response( RequestClient req, std::string bodyClient, std::vector<Serve
 		this->code = ss.str();
 		this->msg = req.getMsgError();
 	}
+<<<<<<< HEAD
 	this->constructResponse(req);
+=======
+	
+	this->full = this->version + " " + this->code + " " + this->msg + "\n";
+	if (req.getCookie() == false)
+	{
+		this->full += "Set-Cookie: session_id=" + SessionTokenCreate(32) + ";\r\n";
+		addCookieValues();
+	}
+	this->full += "Content-Length: " + lengthBody() + "\n";
+	this->full += "\n";
+	if (req.getMethod().compare("HEAD"))
+		this->full += this->body + "\n";
+>>>>>>> refs/remotes/origin/master
 }
 
 Response::~Response( void )

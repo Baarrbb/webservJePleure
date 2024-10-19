@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 17:36:45 by marvin            #+#    #+#             */
+<<<<<<< HEAD
 /*   Updated: 2024/10/20 01:16:07 by marvin           ###   ########.fr       */
+=======
+/*   Updated: 2024/10/19 00:47:41 by ersees           ###   ########.fr       */
+>>>>>>> refs/remotes/origin/master
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,8 +51,17 @@ class Response
 		void		handleCGI(std::string, RequestClient);
 		void		checkMethodsAllowed( Location, std::string );
 		std::string	findFile( Location, std::string, int );
+<<<<<<< HEAD
 		void		fillLoc(Server serv, Location* loc);
 		void		addBody( std::string, RequestClient );
+=======
+		
+		void	fillLoc(Server serv, Location* loc);
+		void		addCookieValues();
+		
+		
+		void		addBody( std::string );
+>>>>>>> refs/remotes/origin/master
 		std::string	lengthBody( void );
 		void		constructResponse( RequestClient );
 		void		addCookieValues( void );

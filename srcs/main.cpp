@@ -6,9 +6,14 @@ int global_variable = 0;
 static void 	my_sig(int signum)
 {
 	std::cout << "Interrupt signal (" << signum << ") received.\n";
+<<<<<<< HEAD
 	// global_variable = 127;
 	// return ;
 	exit(127);
+=======
+	global_variable = 127;
+	return ;
+>>>>>>> refs/remotes/origin/master
 }
 
 int	main(int argc, char **argv, char **envp)
