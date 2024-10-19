@@ -15,6 +15,7 @@ static void	InitOptions(std::vector<std::string> &options)
 	options.push_back("}");
 	options.push_back("host");
 	options.push_back("default_error_page");
+	options.push_back("autoindex");
 }
 
 int	Server::InitLocation(std::istringstream &iss, std::ifstream &file)
@@ -62,6 +63,25 @@ int	Server::hostportadd(std::istringstream &iss)
 	if (endd.empty() == false || value[value.size() - 1] != ';')
 		return (0); //error	
 	return (1); 
+}
+
+static int	OnOrOff(std::istringstream &iss, bool& option)
+{
+	std::string value;
+	std::string end;
+	if (iss >> value)
+	{
+		if (value.compare("on;") == 0)
+			option = true;
+		else if (value.compare("off;") == 0)
+			option = false;
+		else
+			return (0);
+	}
+	iss >> end;
+	if (end.empty() == false || value[value.size() - 1] != ';')
+		return (0);
+	return (1);
 }
 
 static int	fonctionbiss(std::istringstream &iss, std::vector<std::string>& option)
@@ -187,6 +207,13 @@ int	Server::ProcessDirective(const std::string& line, std::ifstream &file)
 				if (fonctionbis(iss, this->error_page) == 0)
 				{
 					throw Server::errors("error in error page");
+				}
+				break;
+			case AUTO_INDEX:
+				std::cout << "999999999999999999" << std::endl;
+				if (OnOrOff(iss, this->autoindex) == 0)
+				{
+					throw Server::errors("error in autoindex");
 				}
 				break;
 			default:

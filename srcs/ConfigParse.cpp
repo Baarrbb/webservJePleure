@@ -13,7 +13,7 @@ static int	NotaSpaceOrChara(std::string line, char c, int i)
 
 int Config::ServerNameByServer()
 {
-	std::cout << "endl" << std::endl;
+	// std::cout << "endl" << std::endl;
 	for (size_t y = 0; y < this->GetServer().size(); ++y)
 	{
 		std::vector<std::string> first = this->GetServer(y + 1)->GetServerName();
@@ -25,7 +25,7 @@ int Config::ServerNameByServer()
 			{
 				for (std::vector<std::string>::iterator itt = second.begin(); itt < second.end(); itt++)
 				{
-					std::cout << "endl" << *it << *itt << std::endl;
+					// std::cout << "endl" << *it << *itt << std::endl;
 					if ((*it).compare(*itt) == 0)
 					{
 						std::cerr << "Error: Server name \"" << *it 
@@ -89,7 +89,7 @@ int	Config::ParseGlobal()
 		std::cerr << "invalid parameter server_name in xxxx" << std::endl;
 		return (1);
 	}
-	std::cout << "different servername" << std::endl;
+	// std::cout << "different servername" << std::endl;
 	for (size_t y = 0; y < this->GetServer().size(); y++)
 	{
 		for (size_t i = 0; i < this->GetServer(y + 1)->GetHost().size(); i++)
@@ -108,9 +108,9 @@ int	Config::ParseGlobal()
 						std::string newport = this->GetServer(j + 1)->GetPort(k);
 						if ((currentport.compare(newport) == 0 && currenthost.compare(newhost) == 0))
 						{
-							std::cout << "different servernamedd" << std::endl;
+							// std::cout << "different servernamedd" << std::endl;
 							this->GetServer(j + 1)->AddSocket(false, k);
-							std::cout << "different servernamedd" << std::endl;
+							// std::cout << "different servernamedd" << std::endl;
 							//yipi = true;
 						}
 					}

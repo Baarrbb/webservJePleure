@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 16:42:39 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/15 18:00:43 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/19 18:09:55 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,8 @@
 #include <exception>
 #include <cstring>
 #include <iterator>
+#include <cstdio>
+#include <ctime>
 
 #include <unistd.h>
 #include <sys/wait.h>

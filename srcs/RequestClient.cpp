@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:45:26 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/16 23:07:37 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/19 18:58:48 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,31 +14,18 @@
 
 void	printOptions(std::map<std::string, std::string> options);
 
-// PRENDRE LE PARSING DE CONFIG ET COMPARER METHODS ACCEPTE
-// EN FONCTION DE LA LOC AUSSI (JPP)
-// SI PAS ACCEPTE RENVOYER ERREUR 403
-// AVANT DE CHECK SI METHOD EXIST (DONC AVANT ERREUR 405 NOT ALLOWED)
-
-RequestClient::RequestClient(std::string &req) : error(0)
+RequestClient::RequestClient(std::string &req) : error(0), cookie(false)
 {
-	std::cout << std::endl << req << std::endl << std::endl;
-	req.erase(req.length() - 1);
-	std::string line = req.substr(0, req.find("\n"));
+	std::cout << std::endl << "." << req << "." <<  std::endl << std::endl;
 
+	std::string	line = req.substr(0, req.find("\n"));
 	try
 	{
 		this->badSyntax(line);
-
-		size_t	space = line.find(" ");
-		this->addMethod(line.substr(0, space));
-
+		this->addMethod(line.substr(0, line.find(" ")));
 		req.erase(0, req.find("\n") + 1);
-		if (req.length() == 1 && (req[0] == '\n' || req[0] == '\r'))
-			throw RequestClient::ErrorRequest(400, "not_found/400.html", "Bad Request");
-
 		this->othersOptions(req);
 		// printOptions(this->options);
-
 		this->addHost();
 	}
 	catch(RequestClient::ErrorRequest &e)
@@ -49,8 +36,8 @@ RequestClient::RequestClient(std::string &req) : error(0)
 		return ;
 	}
 
-	std::cout << "method :" + this->method + "." << std::endl;
-	std::cout << "file :" + this->target + "." << std::endl;
+	if (this->options.find("cookie") != this->options.end())
+		this->cookie = true;
 }
 
 RequestClient::~RequestClient( void )
@@ -98,6 +85,9 @@ int	spaceInside( std::string &str )
 
 void	RequestClient::badSyntax( std::string line )
 {
+	if (line.empty())
+		throw RequestClient::ErrorRequest(400, "not_found/400.html", "Bad Request");
+	
 	std::string tmp = line;
 	tmp.erase(tmp.length() - 1);
 
@@ -213,12 +203,12 @@ void	RequestClient::addHost( void )
 
 void	RequestClient::othersOptions( std::string next )
 {
-	next.erase(next.length() - 1);
 	while (!next.empty())
 	{
+		std::string line = next.substr(0, next.find("\n"));
 		try
 		{
-			this->addOptions(next.substr(0, next.find("\n")));
+			this->addOptions(line);
 		}
 		catch(RequestClient::ErrorRequest &e)
 		{
@@ -227,7 +217,7 @@ void	RequestClient::othersOptions( std::string next )
 			this->msgError = e.getMsg();
 			return ;
 		}
-		next.erase(0, next.find("\n") + 1);
+		next.erase(0, line.length() + 1);
 	}
 }
 
@@ -271,6 +261,16 @@ std::string	RequestClient::getOptions( std::string key )
 std::map<std::string, std::string>	RequestClient::getOptions( void )
 {
 	return this->options;
+}
+
+// std::string	RequestClient::getBody( void )
+// {
+// 	return this->body;
+// }
+
+bool		RequestClient::getCookie( void ) const
+{
+	return this->cookie;
 }
 
 // Setters

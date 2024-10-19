@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:41:14 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/16 01:24:10 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/19 18:30:26 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,8 @@ class RequestClient
 		std::string							getHost( void );
 		std::string							getOptions( std::string key );
 		std::map<std::string, std::string>	getOptions( void );
-		
+		bool								getCookie( void ) const;
+		// std::string							getBody( void );
 
 		void		setTarget( std::string );
 		void		setError( int );
@@ -53,6 +54,8 @@ class RequestClient
 		std::string							host;
 		std::string							query; // jsp si je prends en charge :'(
 		std::map<std::string, std::string>	options;
+		bool								cookie;
+		// std::string							body;
 
 	public:
 		class ErrorRequest : public std::exception

@@ -16,6 +16,7 @@ Server::Server()
 	this->cgi_pass = "";
 	this->client_body_buffer_size = "";
 	this->error_page = "";
+	this->autoindex = false;
 }
 /*Server::Server(std::string filename)
 {
@@ -56,6 +57,7 @@ Server & Server::operator = (const Server &copy)
 		this->client_body_buffer_size = copy.client_body_buffer_size;
 		this->error_page = copy.error_page;
 		this->test = copy.test;
+		this->autoindex = copy.autoindex;
 	}
 	return *this;
 }
@@ -114,5 +116,6 @@ std::ostream	&operator<<(std::ostream &out, Server &to_write) // rajouter le con
 	out << "cgipass : ";to_write.WriteCgiPass();
 	out << "clientbodysize : ";to_write.WriteClientBodyBufferSize();
 	out << "location :"; to_write.WriteLocation();
+	out << "autoindex :" << to_write.getAutoIndex() << std::endl;
 	return (out);
 }

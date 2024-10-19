@@ -62,70 +62,6 @@ int	Config::ServerCreate(int i, int y)
 	return (socketserverfd);
 }
 
-int	CgiHandling(char **envp, int clientsocket)
-{
-	int status;
-	int pipefd[2];
-	int pid;
-	char **test = 0; 
-	if (pipe(pipefd) == -1)
-	{
-		std::cerr << "pipe\n"; 
-			return (-1);
-	}
-	if ((pid = fork()) == -1)
-	{
-		std::cerr << "fork" <<std::endl;
-		close(pipefd[0]);
-		close(pipefd[1]);
-		return (-1);
-	}
-	if (pid == 0)
-	{
-		close(pipefd[0]);
-		if (dup2(pipefd[1], 1) == -1)
-		{
-			std::cerr << "dup2" << std::endl;
-			exit(127);
-		}
-		close(pipefd[1]);
-		if (execve("pathfilecgi", test, envp) == -1) //test = params_Cgi si on doit l implementer ( pas la pr le moment en tt cas)
-		{
-			close(pipefd[0]);
-			close(pipefd[1]);
-			std::cerr << "execve" << std::endl;
-			exit(127);
-		}
-	}
-	if (pid > 0)
-	{
-		waitpid(pid, &status, 0);
-		close(pipefd[1]);
-		if (WIFEXITED(status) && WEXITSTATUS(status) == 127)
-			std::cerr << "cgi" << std::endl;
-		char cgi_output[4096]; // j ai lu que ct 4096 mais jsp si c reel
-		int readd = read(pipefd[0], cgi_output, sizeof(cgi_output));
-		if (readd > 0)
-		{
-			cgi_output[readd] = '\0';
-			send(clientsocket, cgi_output, readd, 0);
-		}
-		else if (readd == -1)
-		{
-			std::cerr << "read" << std::endl;
-			return (-1);
-		}
-		close(pipefd[0]);
-		return (0);
-	}
-	return (0);
-}
-
-int	Config::IsACgi()
-{
-	return (0);
-}
-
 int	Config::ServerStart(char **envp)
 {
 	int socketserverfd;
@@ -168,7 +104,6 @@ int	Config::ServerStart(char **envp)
 				if (i < num_srvs)
 				{
 					socklen_t their_size = sizeof(their_addr);
-					// int new_fd = accept(socketserverfd, (struct sockaddr *)&their_addr, &their_size);
 					int new_fd = accept(poll_fds[i].fd, (struct sockaddr *)&their_addr, &their_size);
 					if (new_fd == -1) {
 						std::cerr << "accept\n";
@@ -198,45 +133,22 @@ int	Config::ServerStart(char **envp)
 					this->processClientRequest(poll_fds[i].fd, std::string(s), port);
 					(void)envp;
 					close(poll_fds[i].fd);
-						poll_fds[i] = poll_fds[num_fds - 1]; 
-						num_fds--;
-					// char buffer[1024];
-					// int bytes_recv = recv(poll_fds[i].fd, buffer, sizeof(buffer), 0); // rec header
-					// if (bytes_recv <= 0)
-					// {
-					// 	if (bytes_recv == 0)
-					// 		std::cout << "Client disconnected\n";
-					// 	else
-					// 	{
-					// 		return (1);
-					// 		std::cerr << "recv\n";
-					// 	}
-					// 	close(poll_fds[i].fd);
-					// 	poll_fds[i] = poll_fds[num_fds - 1]; 
-					// 	num_fds--;
-					// }
-					// else if (IsACgi()) //check si la reception est un cgi a faire mais j dois lire des trucs jsp cmt ca mrche
-					// {
-					// 	if (CgiHandling(envp, poll_fds[i].fd) == -1)
-					// 	{
-					// 		return (1);
-					// 	}
-					// 	close(poll_fds[i].fd);
-					// 	poll_fds[i] = poll_fds[num_fds - 1]; 
-					// 	num_fds--;
-					// }
-					// else
-					// {
-					// 	if (send(poll_fds[i].fd, buffer, bytes_recv, 0) == -1)// send header
-					// 	{
-					// 		std::cout << "send" << std::endl;
-					// 		return (1);
-					// 	}
-					// 	close(poll_fds[i].fd);
-					// 	poll_fds[i] = poll_fds[num_fds - 1]; 
-					// 	num_fds--;
-					// }
+					poll_fds[i] = poll_fds[num_fds - 1]; 
+					num_fds--;
 				}
+			}
+			if (global_variable == 127)
+			{
+				for (int i = 0; i < num_fds; ++i)
+				{
+					if (poll_fds[i].fd != -1)
+					{
+		 				close(poll_fds[i].fd);
+						poll_fds[i].fd = -1;
+					}
+				}
+				num_fds = 0;
+				return(0);
 			}
 		}
 	}
@@ -245,45 +157,47 @@ int	Config::ServerStart(char **envp)
 
 void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 {
-	int valread;
-	char buffer[30000] = {0};
-	std::string reqString;
-	// bool keepAlive = false;
+	int			valread;
+	char		buffer[300000] = {0};
+	std::string	reqString;
+
 	while (1)
 	{
 		valread = recv(clientFd, buffer, 30000, 0);
 		if (valread > 0)
 		{
-			std::string bufString(buffer, 30000);
 			reqString.append(buffer, valread);
-			// if (reqString.find_first_not_of("\r\n") == std::string::npos)
-			// {
-			// 	reqString.clear();
-			// 	continue;
-			// }
-
-			if (reqString.find("\r\n\r\n") != std::string::npos
-				|| reqString.find("\n\n") != std::string::npos)
+			size_t end_headers = reqString.find("\r\n\r\n");
+			if (end_headers != std::string::npos)
 			{
-				RequestClient	req(reqString);
-				Response	rep( req, this->_servers, host, port );
-				std::string	response = rep.getFull();
-				// if (response.find("keep-alive") != std::string::npos)
-				// 	keepAlive = true;
-				// else
-				// 	keepAlive = false;
+				std::string		body;
+				std::string		headers = reqString.substr(0, end_headers);
+				RequestClient	req(headers);
 
-				// std::cout << response << std::endl;
+				if (!req.getMethod().compare("POST") && req.getOptions("content-length").compare(""))
+				{
+					if (strtol(req.getOptions("content-length").c_str(), 0, 10) > static_cast<long>(30000 - headers.size()))
+					{
+						body = reqString.substr(end_headers + 4, reqString.size());
+						while (static_cast<long>(body.size()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
+						{
+							valread = recv(clientFd, buffer, 30000, 0);
+							if (valread > 0)
+								body.append(buffer, valread);
+						}
+					}
+					else
+						body = reqString.substr(end_headers + 4, reqString.length());
+				}
+				Response	rep( req, body, this->_servers, host, port );
+				std::string	response = rep.getFull();
+
+				// std::cout << response << std::endl << std::endl;
 
 				send(clientFd, response.c_str(), response.length(), 0);
 				break ;
-
-				// if (keepAlive)
-				// 	reqString.clear();
-				// else
-				// 	break ;
-
 			}
 		}
 	}
 }
+

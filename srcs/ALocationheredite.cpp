@@ -16,7 +16,9 @@ Location::Location()
 	this->client_body_buffer_size = "";
 	this->error_page = "";
 	this->yipi = std::vector<bool>();
+	this->autoindex = false;
 }
+
 Location::Location(std::string filename)
 {
 	this->_file_path = filename;
@@ -32,7 +34,9 @@ Location::Location(std::string filename)
 	this->client_body_buffer_size = "";
 	this->error_page = "";
 	this->yipi = std::vector<bool>();
+	this->autoindex = false;
 }
+
 Location::~Location()
 {
 	// for (size_t i = 0; i < _locations.size(); ++i)
@@ -89,5 +93,6 @@ std::ostream	&operator<<(std::ostream &out, Location &to_write) // rajouter le c
 	out << "cgipass : ";to_write.WriteCgiPass();
 	out << "clientbodysize : ";to_write.WriteClientBodyBufferSize();
 	out << "location :"; to_write.WriteLocation();
+	out << "autoindex :" << to_write.getAutoIndex() << std::endl;
 	return (out);
 }

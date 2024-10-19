@@ -56,6 +56,13 @@ void	Server::SetSocket(bool info)
 	this->yipi.push_back(info);
 }
 
+void	Server::setAutoIndex(bool i)
+{
+	this->autoindex = i;
+}
+
+
+
 // Get methods
 
 std::vector<std::string> Server::GetServerName() const
@@ -149,6 +156,13 @@ bool	Server::GetSocket(const int& index) const
 		return this->yipi[index]; // Get the allowed method at the given index
 	throw Server::WrongExpression();
 }
+
+bool	Server::getAutoIndex( void ) const
+{
+	return this->autoindex;
+}
+
+
 
 // Write
 

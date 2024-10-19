@@ -7,7 +7,7 @@
 </head>
 <body>
     <h1>Tester les requêtes POST</h1>
-    
+
     <?php
     $message = "";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {

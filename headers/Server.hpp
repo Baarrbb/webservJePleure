@@ -6,6 +6,7 @@ class Location;
 
 #include "Webserv.hpp"
 
+extern int global_variable;
 
 enum Directive {
 	SERVER_NAME,
@@ -20,6 +21,7 @@ enum Directive {
 	END,
 	HOST,
 	DEFAULT_ERROR_PAGE,
+	AUTO_INDEX,
 	NUM_DIRECTIVES
 };
 
@@ -55,26 +57,28 @@ class Server
 		void					SetCgiPass(const std::string& value);
 		void					SetClientBodyBufferSize(const std::string& value);
 		void					SetSocket(bool info);
+		void					setAutoIndex( bool );
 
 		// Get methods
-		std::vector<Location*>	GetLocation() const;// sans index ca donne le vector en entier
-		Location*				&GetLocation(unsigned int index); // avec index ca donne un serveur en particulier
-		std::vector<std::string>			GetServerName() const;
-		std::vector<std::string>					GetPort() const;
-		std::vector<std::string>			GetHost() const;
-		std::vector<std::string>			GetIndex() const;
-		std::vector<std::string>			GetAllowMethods() const;
-		std::string				GetServerName(const int& index) const;
-		std::string						GetPort(const int& index) const;
-		std::string				GetHost(const int& index) const;
-		std::string				GetRoot() const;
-		std::string				GetIndex(const int& index) const;
-		std::string				GetErrorPage() const;
-		std::string				GetAllowMethods(const int& index) const;
-		std::string				GetAlias() const;
-		std::string				GetCgiPass() const;
-		std::string				GetClientBodyBufferSize() const;
-		bool					GetSocket(const int &index) const;
+		std::vector<Location*>		GetLocation() const;// sans index ca donne le vector en entier
+		Location*					&GetLocation(unsigned int index); // avec index ca donne un serveur en particulier
+		std::vector<std::string>	GetServerName() const;
+		std::vector<std::string>	GetPort() const;
+		std::vector<std::string>	GetHost() const;
+		std::vector<std::string>	GetIndex() const;
+		std::vector<std::string>	GetAllowMethods() const;
+		std::string					GetServerName(const int& index) const;
+		std::string					GetPort(const int& index) const;
+		std::string					GetHost(const int& index) const;
+		std::string					GetRoot() const;
+		std::string					GetIndex(const int& index) const;
+		std::string					GetErrorPage() const;
+		std::string					GetAllowMethods(const int& index) const;
+		std::string					GetAlias() const;
+		std::string					GetCgiPass() const;
+		std::string					GetClientBodyBufferSize() const;
+		bool						GetSocket(const int &index) const;
+		bool						getAutoIndex( void ) const;
 		
 		// Write methods
 		void					WriteServerName() const;
@@ -123,6 +127,7 @@ class Server
 		std::string					client_body_buffer_size;
 		int							test;
 		std::vector<bool>			yipi;
+		bool						autoindex;
 
 		bool								IsValidServerName(const std::string& name);
 		bool								IsValidListen();
