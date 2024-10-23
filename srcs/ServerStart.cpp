@@ -30,7 +30,7 @@ int	Config::ServerCreate(int i, int y)
 		return 1;
 	}
 
-	std::cout << this->GetServer(y + 1)->GetHost(i).c_str() << this->GetServer(y + 1)->GetPort(i).c_str() << std::endl;
+	// std::cout << this->GetServer(y + 1)->GetHost(i).c_str() << this->GetServer(y + 1)->GetPort(i).c_str() << std::endl;
 	if (getaddrinfo(this->GetServer(y + 1)->GetHost(i).c_str(), this->GetServer(y + 1)->GetPort(i).c_str(), &hints, &res) != 0)
 	{
 		std::cerr << "getaddrinfo" << std::endl;
@@ -73,10 +73,10 @@ int	Config::ServerStart(char **envp)
 
 	for (size_t y = 0; y < this->GetServer().size(); y++)
 	{
-		std::cout << "survive" << this->GetServer().size() << "!" << this->GetServer(y + 1)->GetHost().size() << std::endl;
+		// std::cout << "survive" << this->GetServer().size() << "!" << this->GetServer(y + 1)->GetHost().size() << std::endl;
 		for (size_t i = 0; i < this->GetServer(1 + y)->GetHost().size(); i++)
 		{
-			std::cout << "for turn : " << num_fds << std::endl;
+			// std::cout << "for turn : " << num_fds << std::endl;
 			if (this->GetServer(1 + y)->GetSocket(i) == true)
 			{
 				if ((socketserverfd = this->ServerCreate(i, y)) == -1)
@@ -87,9 +87,9 @@ int	Config::ServerStart(char **envp)
 			}
 		}
 	}
-	std::cout <<"survive \n";
+	// std::cout <<"survive \n";
 	num_srvs = num_fds;
-	std::cout << num_fds << std::endl;
+	// std::cout << num_fds << std::endl;
 	while (1)
 	{
 		if (poll(poll_fds, num_fds, -1) == -1)
@@ -110,7 +110,7 @@ int	Config::ServerStart(char **envp)
 						continue;
 					}
 					inet_ntop(their_addr.ss_family, &(((struct sockaddr_in*)&their_addr)->sin_addr), s, sizeof s);
-					std::cout << "server: got connection from " << std::string(s) << std::endl;
+					// std::cout << "server: got connection from " << std::string(s) << std::endl;
 
 					poll_fds[num_fds].fd = new_fd;
 					poll_fds[num_fds].events = POLLIN;
@@ -128,9 +128,10 @@ int	Config::ServerStart(char **envp)
 					}
 					inet_ntop(server_addr.ss_family, &(((struct sockaddr_in*)&server_addr)->sin_addr), s, sizeof s);
 					uint16_t port = ntohs(((struct sockaddr_in*)&server_addr)->sin_port);
-					std::cout << "server is :" << s << " " << port << std::endl;
+					// std::cout << "server is :" << s << " " << port << std::endl;
 
 					this->processClientRequest(poll_fds[i].fd, std::string(s), port);
+	
 					(void)envp;
 					close(poll_fds[i].fd);
 					poll_fds[i] = poll_fds[num_fds - 1]; 
@@ -157,46 +158,44 @@ int	Config::ServerStart(char **envp)
 
 void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 {
-	int			valread;
-	char		buffer[300000] = {0};
+	int			rd;
+	char		buffer[8192] = {0};
 	std::string	reqString;
+	std::string	body;
 
 	while (1)
 	{
-		valread = recv(clientFd, buffer, 30000, 0);
-		if (valread > 0)
+		rd = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
+		if (rd == -1)
 		{
-			reqString.append(buffer, valread);
-			size_t end_headers = reqString.find("\r\n\r\n");
-			if (end_headers != std::string::npos)
+			std::cerr << "Error: recv: " << strerror(errno) << std::endl;
+			return ;
+		}
+		reqString.append(buffer, rd);
+		size_t	endHeaders = reqString.find("\r\n\r\n");
+		if (endHeaders != std::string::npos)
+		{
+			std::string		headers = reqString.substr(0, endHeaders);
+			// rajouter un if pour verifier si bien POST et content-ength ?
+			body = reqString.substr(endHeaders + 4, reqString.length());
+			RequestClient	req(headers);
+			if (!req.getMethod().compare("POST") && req.getOptions("content-length").compare(""))
 			{
-				std::string		body;
-				std::string		headers = reqString.substr(0, end_headers);
-				RequestClient	req(headers);
-
-				if (!req.getMethod().compare("POST") && req.getOptions("content-length").compare(""))
+				if (static_cast<long>(body.length()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
 				{
-					if (strtol(req.getOptions("content-length").c_str(), 0, 10) > static_cast<long>(30000 - headers.size()))
-					{
-						body = reqString.substr(end_headers + 4, reqString.size());
-						while (static_cast<long>(body.size()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
-						{
-							valread = recv(clientFd, buffer, 30000, 0);
-							if (valread > 0)
-								body.append(buffer, valread);
-						}
-					}
-					else
-						body = reqString.substr(end_headers + 4, reqString.length());
+					body.append(buffer, rd);
+					continue;
 				}
-				Response	rep( req, body, this->_servers, host, port );
-				std::string	response = rep.getFull();
-
-				// std::cout << response << std::endl << std::endl;
-
-				send(clientFd, response.c_str(), response.length(), 0);
-				break ;
 			}
+			Response	rep( req, body, this->_servers, host, port );
+			std::string	response = rep.getFull();
+			if (send(clientFd, response.c_str(), response.length(), 0) == -1)
+			{
+				std::cerr << "Error: send: " << strerror(errno) << std::endl;
+				return ;
+			}
+
+			break ;
 		}
 	}
 }

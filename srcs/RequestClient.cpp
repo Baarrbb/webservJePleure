@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:45:26 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/19 18:58:48 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/23 01:31:28 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	printOptions(std::map<std::string, std::string> options);
 
 RequestClient::RequestClient(std::string &req) : error(0), cookie(false)
 {
-	std::cout << std::endl << "." << req << "." <<  std::endl << std::endl;
+	// std::cout << std::endl << "." << req << "." <<  std::endl << std::endl;
 
 	std::string	line = req.substr(0, req.find("\n"));
 	try
@@ -27,6 +27,7 @@ RequestClient::RequestClient(std::string &req) : error(0), cookie(false)
 		this->othersOptions(req);
 		// printOptions(this->options);
 		this->addHost();
+
 	}
 	catch(RequestClient::ErrorRequest &e)
 	{
@@ -144,6 +145,7 @@ int	RequestClient::addTarget( std::string arg )
 	if (arg[0] == '/')
 	{
 		this->target = arg;
+		this->addQuery(arg);
 		return 1;
 	}
 	arg.erase(0, 7);
@@ -151,10 +153,23 @@ int	RequestClient::addTarget( std::string arg )
 		return 0;
 	delim = arg.find("/");
 	if (delim == std::string::npos)
+	{
 		this->target = "/";
+		if (arg.find("?") != std::string::npos)
+			this->target += arg.substr(arg.find("?"), arg.length());
+	}
 	else
 		this->target = arg.substr(delim, arg.length());
+	this->addQuery(this->target);
 	return 1;
+}
+
+void	RequestClient::addQuery( std::string arg )
+{
+	size_t	pos = arg.find("?");
+	if (pos != std::string::npos)
+		this->query = arg.substr(pos, arg.length());
+	this->path = arg.substr(0, pos);
 }
 
 void	RequestClient::addOptions( std::string line )
@@ -224,32 +239,32 @@ void	RequestClient::othersOptions( std::string next )
 
 // Getters
 
-int RequestClient::getError( void )
+int RequestClient::getError( void ) const
 {
 	return this->error;
 }
 
-std::string	RequestClient::getMsgError( void )
+std::string	RequestClient::getMsgError( void ) const
 {
 	return this->msgError;
 }
 
-std::string	RequestClient::getMethod( void )
+std::string	RequestClient::getMethod( void ) const
 {
 	return this->method;
 }
 
-std::string	RequestClient::getTarget( void )
+std::string	RequestClient::getTarget( void ) const
 {
 	return this->target;
 }
 
-std::string	RequestClient::getHost( void )
+std::string	RequestClient::getHost( void ) const
 {
 	return this->host;
 }
 
-std::string	RequestClient::getOptions( std::string key )
+std::string	RequestClient::getOptions( std::string key ) const
 {
 	std::map<std::string, std::string>::const_iterator it = this->options.find(key);
 	if (it != this->options.end())
@@ -258,19 +273,24 @@ std::string	RequestClient::getOptions( std::string key )
 		return "";
 }
 
-std::map<std::string, std::string>	RequestClient::getOptions( void )
+std::map<std::string, std::string>	RequestClient::getOptions( void ) const
 {
 	return this->options;
 }
 
-// std::string	RequestClient::getBody( void )
-// {
-// 	return this->body;
-// }
-
-bool		RequestClient::getCookie( void ) const
+bool	RequestClient::getCookie( void ) const
 {
 	return this->cookie;
+}
+
+std::string	RequestClient::getPath( void ) const
+{
+	return this->path;
+}
+
+std::string	RequestClient::getQuery( void ) const
+{
+	return this->query;
 }
 
 // Setters

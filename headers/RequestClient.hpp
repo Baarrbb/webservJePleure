@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:41:14 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/19 18:30:26 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/22 00:19:13 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,28 +21,29 @@ class RequestClient
 		RequestClient(std::string &);
 		~RequestClient( void );
 
-		int									getError( void );
-		std::string							getMsgError( void );
-		std::string							getMethod( void );
-		std::string							getTarget( void );
-		std::string							getHost( void );
-		std::string							getOptions( std::string key );
-		std::map<std::string, std::string>	getOptions( void );
+		int									getError( void ) const;
+		std::string							getMsgError( void ) const;
+		std::string							getMethod( void ) const;
+		std::string							getTarget( void ) const;
+		std::string							getHost( void ) const;
+		std::string							getOptions( std::string ) const;
+		std::map<std::string, std::string>	getOptions( void ) const;
 		bool								getCookie( void ) const;
-		// std::string							getBody( void );
+		std::string							getPath( void ) const;
+		std::string							getQuery( void ) const;
 
 		void		setTarget( std::string );
 		void		setError( int );
 		void		setMsgError( std::string );
 
 	private:
-		RequestClient( void );
 		void	badSyntax( std::string line );
 
 		int		checkIfHost( void );
 		void	addMethod( std::string );
 		void	addHost( void );
 		int		addTarget( std::string );
+		void	addQuery( std::string );
 		void	addOptions( std::string );
 
 		void	othersOptions( std::string );
@@ -52,10 +53,10 @@ class RequestClient
 		std::string							method;
 		std::string							target;
 		std::string							host;
-		std::string							query; // jsp si je prends en charge :'(
+		std::string							path;
+		std::string							query;
 		std::map<std::string, std::string>	options;
 		bool								cookie;
-		// std::string							body;
 
 	public:
 		class ErrorRequest : public std::exception

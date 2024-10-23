@@ -4,14 +4,15 @@
 Config::Config()
 {
 	test = 1;
-	this->_filename = "filepardefaultjsplequel";
-	this->_servers = std::vector<Server*>();
+	// this->_filename = "filepardefaultjsplequel";
+	// this->_servers = std::vector<Server*>();
 }
+
 Config::Config(std::string filename)
 {
 	this->test = 1;
 	this->_filename = filename;
-	this->_servers = std::vector<Server*>();
+	// this->_servers = std::vector<Server*>();
 }
 Config::~Config()
 {
@@ -27,7 +28,10 @@ Config::Config (const Config &copy)
 Config & Config::operator = (const Config &copy)
 {
 	if (this != &copy)
+	{
 		this->test = copy.test;
+		this->_filename = copy._filename;
+	}
 	return *this;
 }
 

@@ -7,6 +7,8 @@
 </head>
 <body>
     <h1>Uploader un fichier</h1>
+
+	<h2><a href="/delete.php">Delete fichier</a></h2>
     
     <form action="/get_upload.php" method="POST" enctype="multipart/form-data">
         <label for="file">Choisissez un fichier :</label><br><br>

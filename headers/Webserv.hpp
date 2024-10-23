@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 16:42:39 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/19 18:09:55 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/20 16:52:47 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,5 +44,6 @@
 #include "ALocationheredite.hpp"
 #include "RequestClient.hpp"
 #include "Response.hpp"
+#include "CGI.hpp"
 
 #endif

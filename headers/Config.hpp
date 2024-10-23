@@ -45,7 +45,7 @@ class Config
 	private:
 		int						test;
 		std::string				_filename;
-		std::vector<Server*>		_servers;
+		std::vector<Server*>	_servers;
 		void				processClientRequest( int, std::string, uint16_t );
 };
 

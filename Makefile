@@ -62,6 +62,7 @@ SRC = \
 	$(SRC_DIR)/ServerStart.cpp \
 	$(SRC_DIR)/RequestClient.cpp \
 	$(SRC_DIR)/Response.cpp \
+	$(SRC_DIR)/CGI.cpp \
 	$(SRC_DIR)/main.cpp
 
 # $(SRC_DIR)/RequestClient.cpp \

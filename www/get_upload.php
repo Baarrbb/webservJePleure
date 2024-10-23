@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Fichier uploadé avec succès : $fileName<br>";
             echo "Taille du fichier : $fileSize octets<br>";
             echo "Type de fichier : $fileType<br>";
-			header("Location: /uploads/" . urlencode($fileName));
+			header("Location: /uploads/");
     		exit();
         } else {
             echo "Erreur lors de l'upload du fichier.";
