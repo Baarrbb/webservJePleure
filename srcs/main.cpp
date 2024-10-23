@@ -72,9 +72,9 @@ int	main(int argc, char **argv, char **envp)
 	if (conf.ParseGlobal() == 1)
 		return (1);
 	signal(SIGINT, my_sig);
-	if (conf.ServerStart(envp) == 1)
-		return (1);
-
+	//if (conf.ServerStart(envp) == 1)
+	//	return (1);
+	(void)envp;
 	return (0);
 }
 

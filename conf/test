@@ -1,15 +1,10 @@
 server
 {
-	allow_methods GET;
-	server_name youpi.com;
-	listen 127.0.0.1:8081;
-	listen 127.0.0.1:8083;
-}
+	listen 8080;
+	server_name lala.42.fr;
 
-server
-{
-	allow_methods GET;
-	server_name youpi.cm;
-	listen 127.0.0.1:8081;
-	listen 127.0.0.1:8082;
+	root /home/barb/cursus/newWebserv/www;
+	client_body_limit_size 1m;
+	default_error_page 505 error.html;
+
 }

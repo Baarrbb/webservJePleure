@@ -48,7 +48,7 @@ void Server::SetCgiPass(const std::string& value)
 
 void Server::SetClientBodyBufferSize(const std::string& value)
 {
-	this->client_body_buffer_size = value;	
+	this->client_body_limit_size = value;	
 }
 
 void	Server::SetSocket(bool info)
@@ -56,7 +56,7 @@ void	Server::SetSocket(bool info)
 	this->yipi.push_back(info);
 }
 
-void	Server::setAutoIndex(bool i)
+void	Server::setAutoIndex(std::string i)
 {
 	this->autoindex = i;
 }
@@ -147,7 +147,7 @@ std::string Server::GetCgiPass() const
 
 std::string Server::GetClientBodyBufferSize() const
 {
-	return this->client_body_buffer_size; // Get the client body buffer size string
+	return this->client_body_limit_size; // Get the client body buffer size string
 }
 
 bool	Server::GetSocket(const int& index) const
@@ -157,7 +157,7 @@ bool	Server::GetSocket(const int& index) const
 	throw Server::WrongExpression();
 }
 
-bool	Server::getAutoIndex( void ) const
+std::string	Server::getAutoIndex( void ) const
 {
 	return this->autoindex;
 }

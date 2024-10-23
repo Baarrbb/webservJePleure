@@ -26,7 +26,7 @@ a la place de
 location / 
 {
 	...
-}
+}done
 ```
 
 je seg fault, retour du terminal :
@@ -39,13 +39,13 @@ zsh: IOT instruction (core dumped)  ./webserv
 ### Root
 
 **SI** j'ai une directive root verifier que la directive n'est pas vide.
-
+done
 
 ### Client body size:
 
-Si tu pouvais renommer `client_body_buffer_size` en `client_body_limit_size` ou `client_body_max_size`<br>
-Parce que sur nginx `client_body_buffer_size` c pour set la size du buffer qui lit le body et non pas
-pour le limiter (oui je chipote mais ca devrait pas te prendre longtemps a changer).
+Si tu pouvais renommer `client_body_limit_size` en `client_body_limit_size` ou `client_body_max_size`<br>
+Parce que sur nginx `client_body_limit_size` c pour set la size du buffer qui lit le body et non pas
+pour le limiter (oui je chipote mais ca devrait pas te prendre longtemps a changer).done
 
 ```
 verifier la syntax :
@@ -77,7 +77,7 @@ J'ai pas encore tester pcq du coup j'ai pas encore acces a client body size.
 
 
 
-### error page :
+### error page : ca nn
 ```
 verifier la syntax :
 	default_error_page code file;
@@ -96,9 +96,9 @@ Si possible :
 ```
 
 
-### autoindex
+### autoindex done
 
 Verifier syntax. cad `on` ou `off` sinon log.
 
-### index
+### index done
 Verifier si bien qqc apres la directive sinon log.

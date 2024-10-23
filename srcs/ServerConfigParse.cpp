@@ -11,7 +11,7 @@ static void	InitOptions(std::vector<std::string> &options)
 	options.push_back("location");
 	options.push_back("alias");
 	options.push_back("cgi_pass");
-	options.push_back("client_body_size");
+	options.push_back("client_body_limit_size");
 	options.push_back("}");
 	options.push_back("host");
 	options.push_back("default_error_page");
@@ -22,7 +22,7 @@ int	Server::InitLocation(std::istringstream &iss, std::ifstream &file)
 {
 	//struct stat info;
 	std::string path;
-	if (iss >> path) // && stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode)
+	if (iss >> path && !path.empty()) // && stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode)
 		this->AddLocation(path);
 	else
 		return (std::cout << "chemin pas valide\n", 0);
@@ -42,7 +42,7 @@ int	Server::hostportadd(std::istringstream &iss)
 	size_t		pos;
 	std::string	endd;
 
-	if (iss >> value)
+	if (iss >> value && !value.empty())
 	{
 		pos = value.find(":");
 		if (pos == std::string::npos)
@@ -59,27 +59,65 @@ int	Server::hostportadd(std::istringstream &iss)
 			this->yipi.push_back(true);
 		}
 	}
-	iss >> endd;
-	if (endd.empty() == false || value[value.size() - 1] != ';')
-		return (0); //error	
+	else
+		return (0);
+	if (!(iss >> endd) || endd.empty() == false || value[value.size() - 1] != ';')
+		return (0);
 	return (1); 
 }
 
-static int	OnOrOff(std::istringstream &iss, bool& option)
+static bool IsErrorCodeWellWritten(const std::string& code)
+{
+	if (code.size() != 3)
+		return false;
+	for (size_t i = 0; i < code.size(); ++i)
+		if (!isdigit(code[i])) 
+			return false;
+	return true;
+}
+
+static int ErrorPage(std::istringstream &iss, std::string&option, std::vector<int>&options)
+{
+	std::string		value;
+	std::string		end;
+	char*			endptr;
+	errno = 0;
+
+	while (iss >> value)
+	{
+		std::cout << "lol value ;" << value;
+		if (IsErrorCodeWellWritten(value))
+		{
+			long number = strtol(value.c_str(), &endptr, 10);
+			options.push_back(static_cast<int>(number));
+			if (errno != 0 || *endptr != '\0' || number > INT_MAX || number < INT_MIN)
+				return (0);
+		}
+		else
+			option = value;
+	}
+	if (!(iss >> end) || options.empty() == false || end.empty() == false || value[value.size() - 1] != ';')
+		return (0);
+	return (1);
+}
+
+static int	OnOrOff(std::istringstream &iss, std::string& option)
 {
 	std::string value;
 	std::string end;
-	if (iss >> value)
+	if (iss >> value && value.empty() != 0)
 	{
-		if (value.compare("on;") == 0)
-			option = true;
-		else if (value.compare("off;") == 0)
-			option = false;
+		if (value.compare("on;") == 0 || value.compare("off;") == 0)
+			option = value.substr(0, value.size() - 1);
+		//else if (value.compare("off;") == 0)
+		//	option = false;
 		else
 			return (0);
 	}
+	else
+		return (0);
 	iss >> end;
-	if (end.empty() == false || value[value.size() - 1] != ';')
+	if (!(iss >> end) || end.empty() == false || value[value.size() - 1] != ';')
 		return (0);
 	return (1);
 }
@@ -96,8 +134,7 @@ static int	fonctionbiss(std::istringstream &iss, std::vector<std::string>& optio
 		else
 			option.push_back(value.substr(0, value.size() - 1));
 	}
-	iss >> end;
-	if (end.empty() == false || value[value.size() - 1] != ';')
+	if (!(iss >> end) || end.empty() == false || value[value.size() - 1] != ';')
 		return (0);
 	return (1);
 }
@@ -107,8 +144,10 @@ static int	fonctionbis(std::istringstream &iss, std::string& option)
 	std::string value;
 	std::string end;
 
-	if (iss >> value)
+	if (iss >> value && !value.empty())
 		option = value.substr(0, value.size() - 1);
+	else
+		return (0);
 	iss >> end;
 	if (end.empty() == false || value[value.size() - 1] != ';')
 		return (0);
@@ -122,11 +161,12 @@ int	Server::ProcessDirective(const std::string& line, std::ifstream &file)
 	InitOptions(options);
 
 	std::istringstream iss(line);
-	if (!(iss >> directive)) {
+	if (!(iss >> directive))
 		return 0;
-	}
 	std::vector<std::string>::iterator it = std::find(options.begin(), options.end(), directive);
-	if (it != options.end()) {
+	std::cout << "wtf" << directive << std::endl;
+	if (it != options.end())
+	{
 		int index = std::distance(options.begin(), it);
 		switch(index)
 		{
@@ -186,13 +226,14 @@ int	Server::ProcessDirective(const std::string& line, std::ifstream &file)
 				break;
 			case CLIENT_BODY_SIZE:
 				// std::cout << "8" << std::endl;
-				if (fonctionbis(iss, this->client_body_buffer_size) == 0)
+				if (fonctionbis(iss, this->client_body_limit_size) == 0)
 				{
 					throw Server::errors("error in client body size");
 				}
 				break;
 			case END:
 				// std::cout << "9" << std::endl;
+				std::cout << "line : " << directive << " ";
 				std::cout << "end of server" << std::endl;
 				return (2);
 			case HOST:
@@ -204,7 +245,7 @@ int	Server::ProcessDirective(const std::string& line, std::ifstream &file)
 				break;
 			case DEFAULT_ERROR_PAGE:
 				// std::cout << "11" << std::endl;
-				if (fonctionbis(iss, this->error_page) == 0)
+				if (ErrorPage(iss, this->error_page, this->code_error_pages) == 0)
 				{
 					throw Server::errors("error in error page");
 				}

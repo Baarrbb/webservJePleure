@@ -57,7 +57,7 @@ class Server
 		void					SetCgiPass(const std::string& value);
 		void					SetClientBodyBufferSize(const std::string& value);
 		void					SetSocket(bool info);
-		void					setAutoIndex( bool );
+		void					setAutoIndex( std::string );
 
 		// Get methods
 		std::vector<Location*>		GetLocation() const;// sans index ca donne le vector en entier
@@ -78,7 +78,7 @@ class Server
 		std::string					GetCgiPass() const;
 		std::string					GetClientBodyBufferSize() const;
 		bool						GetSocket(const int &index) const;
-		bool						getAutoIndex( void ) const;
+		std::string					getAutoIndex( void ) const;
 		
 		// Write methods
 		void					WriteServerName() const;
@@ -124,17 +124,19 @@ class Server
 		std::vector<std::string>	allow_methods;
 		std::string					alias;
 		std::string					cgi_pass;
-		std::string					client_body_buffer_size;
+		std::string					client_body_limit_size;
 		int							test;
 		std::vector<bool>			yipi;
-		bool						autoindex;
+		std::string					autoindex;
+		std::vector<int>			code_error_pages;
+		long						octet_body_size;
 
 		bool								IsValidServerName(const std::string& name);
 		bool								IsValidListen();
 		bool								IsValidRoot(const std::string& root);
 		bool								IsValidIndex(const std::string& index);
 		bool								IsValidHost(const std::string& host);
-		bool								IsValidDefaultErrorPage(const std::string& path);
+		bool								IsValidDefaultErrorPage(const std::string& path, std::vector<int> code_error_pages);
 		bool								IsValidClientBodySize(const std::string& size);
 		bool								IsValidAllowMethods(const std::string& methods);
 		bool								IsValidAlias(const std::string& alias);

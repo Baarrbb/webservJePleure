@@ -13,10 +13,12 @@ Location::Location()
 	this->allow_methods = std::vector<std::string>();
 	this->alias = "";
 	this->cgi_pass = "";
-	this->client_body_buffer_size = "";
+	this->client_body_limit_size = "";
 	this->error_page = "";
 	this->yipi = std::vector<bool>();
-	this->autoindex = false;
+	this->autoindex = "";
+	this->code_error_pages = std::vector<int>();
+	this->octet_body_size = -1;
 }
 
 Location::Location(std::string filename)
@@ -31,10 +33,12 @@ Location::Location(std::string filename)
 	this->allow_methods = std::vector<std::string>();
 	this->alias = "";
 	this->cgi_pass = "";
-	this->client_body_buffer_size = "";
+	this->client_body_limit_size = "";
 	this->error_page = "";
 	this->yipi = std::vector<bool>();
-	this->autoindex = false;
+	this->autoindex = "";
+	this->code_error_pages = std::vector<int>();
+	this->octet_body_size = -1;
 }
 
 Location::~Location()

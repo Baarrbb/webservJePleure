@@ -129,7 +129,7 @@ servpart {
 		fct listen
 		fct root
 		fct index
-		fct	client_body_buffer_size
+		fct	client_body_limit_size
 		fct allow_methods POST/GET
 		fct location
 			location part {
@@ -137,7 +137,7 @@ servpart {
 			allow_methods POST/GET
 			root
 			alias???
-			client_body_buffer_size
+			client_body_limit_size
 			index
 			cgi_pass
 			location start part {

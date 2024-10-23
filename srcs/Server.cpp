@@ -14,9 +14,11 @@ Server::Server()
 	this->yipi = std::vector<bool>();
 	this->alias = "";
 	this->cgi_pass = "";
-	this->client_body_buffer_size = "";
+	this->client_body_limit_size = "";
 	this->error_page = "";
-	this->autoindex = false;
+	this->code_error_pages = std::vector<int>();
+	this->autoindex = "";
+	this->octet_body_size = -1;
 }
 /*Server::Server(std::string filename)
 {
@@ -54,7 +56,7 @@ Server & Server::operator = (const Server &copy)
 		this->yipi = copy.yipi;
 		this->alias = copy.alias;
 		this->cgi_pass = copy.cgi_pass;
-		this->client_body_buffer_size = copy.client_body_buffer_size;
+		this->client_body_limit_size = copy.client_body_limit_size;
 		this->error_page = copy.error_page;
 		this->test = copy.test;
 		this->autoindex = copy.autoindex;

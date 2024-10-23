@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 18:00:18 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/23 00:54:35 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/23 12:07:42 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -314,14 +314,14 @@ std::string	Response::findFile( Location serv, std::string target, int err )
 				return filename;
 			}
 		}
-		if (i == serv.GetIndex().size() && !serv.getAutoIndex())
+		/*if (i == serv.GetIndex().size() && !serv.getAutoIndex())
 			throw RequestClient::ErrorRequest(403, "./not_found/403.html", "Forbidden");
 		else if (i == serv.GetIndex().size() && serv.getAutoIndex())
 		{
 			this->isCGI = 1;
 			this->dir = path.append(target);
 			return "./not_found/dir_list.php";
-		}
+		}*/
 			// throw RequestClient::ErrorRequest(404, "./not_found/404.html", "Not Found");
 	}
 	else
@@ -366,8 +366,8 @@ void	Response::fillLoc(Server serv, Location* loc)
 	if (loc->GetErrorPage().empty())
 		loc->SetErrorPage(serv.GetErrorPage());
 	// pb je peux pas faire diff si c pas precise ou si c mis sur off
-	if (!loc->getAutoIndex())
-		loc->setAutoIndex(serv.getAutoIndex());
+	//if (!loc->getAutoIndex())
+		//loc->setAutoIndex(serv.getAutoIndex());
 }
 
 void	Response::addBody(std::string filename, RequestClient req, std::string )

@@ -29,7 +29,24 @@ bool Server::IsValidListen()
 bool Server::IsValidRoot(const std::string& root)
 {
 	struct stat info;
-	return (stat(root.c_str(), &info) == 0 && S_ISDIR(info.st_mode)); // Vérifie si c'est un répertoire valide
+	DIR* dir;
+
+	if (root.empty() || stat(root.c_str(), &info) != 0 || !S_ISDIR(info.st_mode))
+		return false;
+    dir = opendir(root.c_str());
+	if (!dir)
+		return false;
+	struct dirent* ent = readdir(dir);
+	while ((ent = readdir(dir)) != NULL)
+	{
+		if (std::string(ent->d_name) != "." && std::string(ent->d_name) != "..")
+		{
+			closedir(dir);
+			return true;
+		}
+	}
+	closedir(dir);
+	return false;
 }
 
 bool Server::IsValidIndex(const std::string& index)
@@ -43,18 +60,36 @@ bool Server::IsValidHost(const std::string& host)
 	return !host.empty();
 }
 
-bool Server::IsValidDefaultErrorPage(const std::string& path)
+bool Server::IsValidDefaultErrorPage(const std::string& path, std::vector<int> code_error_pages)
 {
-	return !path.empty();
+	return (!path.empty() && !code_error_pages.empty());
 }
 
 bool Server::IsValidClientBodySize(const std::string& size)
 {
 	errno = 0;
 	char* endptr;
-	long body_size = strtol(size.c_str(), &endptr, 10);
-	if (endptr == size.c_str() || *endptr != '\0' || errno == ERANGE || body_size < 0)
+	long body_size;
+	char delim;
+
+	body_size = strtol(size.c_str(), &endptr, 10);
+	if (errno == ERANGE || body_size < 0)
 		return false;
+	delim = tolower(*endptr);
+	switch (delim)
+	{
+		case 'k':
+			this->octet_body_size = body_size * 1024;
+			break;
+		case 'm':
+			this->octet_body_size = body_size * 1024 * 1024;
+			break;
+		case 'g':
+			this->octet_body_size = body_size * 1024 * 1024 * 1024;
+			break;
+		default:
+			return false;
+	}
 	return true;
 }
 
@@ -79,7 +114,7 @@ bool Server::IsValidCgiPass(const std::string& cgi_pass)
 	//peux rajotuer des .php genre ou truc dans le genre a tester mais jsp si c est necessaire
 	if (!cgi_pass.empty())
 		if (access(cgi_pass.c_str(), F_OK) || access(cgi_pass.c_str(), X_OK))
-        	return false;
+			return false;
 
 	return true;
 }
@@ -104,19 +139,19 @@ void Server::ValidateNginxConfig()
 		if (!IsValidIndex(*it))
 			std::cerr << "Invalid index: " << *it << std::endl;
 
-	if (!IsValidDefaultErrorPage(this->error_page))
+	if (!this->client_body_limit_size.empty() && !IsValidDefaultErrorPage(this->error_page, this->code_error_pages))
 		std::cerr << "Invalid default error page: " << this->error_page << std::endl;
 
 	for (std::vector<std::string>::iterator it = this->allow_methods.begin(); it != this->allow_methods.end(); ++it)
 		if (!IsValidAllowMethods(*it))
 			std::cerr << "Invalid allow methods: " << *it << std::endl;
 			
-	if (!IsValidClientBodySize(this->client_body_buffer_size))
-		std::cerr << "Invalid client body size: " << this->client_body_buffer_size << std::endl;
+	if (!this->client_body_limit_size.empty() && !IsValidClientBodySize(this->client_body_limit_size))
+		std::cerr << "Invalid client body size: " << this->client_body_limit_size << std::endl;
 
-	if (!IsValidAlias(this->alias))			
+	if (!this->alias.empty() && !IsValidAlias(this->alias))			
 		std::cerr << "Invalid alias: " << this->alias << std::endl;
 
-	if (!IsValidCgiPass(this->cgi_pass))
+	if (!this->cgi_pass.empty() && !IsValidCgiPass(this->cgi_pass))
 		std::cerr << "Invalid cgi pass: " << this->cgi_pass << std::endl;
 }
