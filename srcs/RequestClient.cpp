@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:45:26 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/23 01:31:28 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/23 17:28:17 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,13 @@
 
 void	printOptions(std::map<std::string, std::string> options);
 
+RequestClient::RequestClient( void ) : error(0), cookie(false)
+{
+}
+
 RequestClient::RequestClient(std::string &req) : error(0), cookie(false)
 {
-	// std::cout << std::endl << "." << req << "." <<  std::endl << std::endl;
+	std::cout << std::endl << "." << req << "." <<  std::endl << std::endl;
 
 	std::string	line = req.substr(0, req.find("\n"));
 	try
@@ -43,6 +47,23 @@ RequestClient::RequestClient(std::string &req) : error(0), cookie(false)
 
 RequestClient::~RequestClient( void )
 {}
+
+RequestClient	&RequestClient::operator=(const RequestClient &cpy)
+{
+	if (this == &cpy)
+		return *this;
+
+	this->error = cpy.error;
+	this->msgError = cpy.msgError;
+	this->method = cpy.method;
+	this->target = cpy.target;
+	this->host = cpy.host;
+	this->path = cpy.path;
+	this->query = cpy.query;
+	this->options = cpy.options;
+	this->cookie = cpy.cookie;
+	return *this;
+}
 
 std::string	eraseSpace(std::string str)
 {
@@ -298,6 +319,11 @@ std::string	RequestClient::getQuery( void ) const
 void	RequestClient::setTarget( std::string file )
 {
 	this->target = file;
+}
+
+void	RequestClient::setPath( std::string file )
+{
+	this->path = file;
 }
 
 void	RequestClient::setError(int err)

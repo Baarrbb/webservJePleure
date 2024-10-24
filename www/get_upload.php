@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "Erreur lors de l'upload du fichier.";
         }
     } else {
+		// print_r($_FILES);
         echo "Aucun fichier n'a été envoyé ou une erreur est survenue.";
     }
 }

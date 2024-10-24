@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 18:00:18 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/23 12:07:42 by ersees           ###   ########.fr       */
+/*   Updated: 2024/10/24 16:47:38 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ Response::Response( RequestClient req, std::string bodyClient, std::vector<Serve
 	: version("HTTP/1.1"), isCGI(false), bodyClient(bodyClient)
 {
 	// std::cout << "host:port " << host << ":" << port << std::endl;
-	// std::cout << req.getPath() << std::endl;
+	std::cout << req.getPath() << std::endl;
 
 	Server		server;
 	Location	loc;
@@ -26,8 +26,12 @@ Response::Response( RequestClient req, std::string bodyClient, std::vector<Serve
 		int err = req.getError();
 		server = this->findConfig(serv, host, port, req.getHost());
 		loc = this->findLocation(server, req.getPath());
-		this->checkLimitBodySize(req, loc);
-		if (err != 400 && err != 505) // == 0 || == 405
+
+		std::cout << "LOC:" << loc << std::endl;
+
+		// this->checkLimitBodySize(req, loc);
+		// if (err != 400 && err != 505) // == 0 || == 405
+		if (err == 0 || err == 405)
 		{
 			this->checkMethodsAllowed(loc, req.getMethod());
 			if (isCGI)
@@ -56,6 +60,8 @@ Response::Response( RequestClient req, std::string bodyClient, std::vector<Serve
 		req.setMsgError(e.getMsg());
 		this->file = req.getTarget();
 	}
+
+	std::cout << "FILE:" << this->file << std::endl;
 
 	if (req.getError() != 301)
 		this->addBody(this->file, req, this->cgiBody);
@@ -211,6 +217,8 @@ void	Response::checkLimitBodySize( RequestClient req, Location loc )
 	long	val;
 	std::string	contentStr = req.getOptions("content-length");
 	long content = strtol(contentStr.c_str(), 0 , 10);
+	std::cout << "VAL:" << valStr << std::endl;
+	std::cout << "CONTENT:" << contentStr << std::endl;
 	if (loc.GetClientBodyBufferSize().find("k") != std::string::npos
 		|| loc.GetClientBodyBufferSize().find("K") != std::string::npos)
 	{
@@ -226,6 +234,8 @@ void	Response::checkLimitBodySize( RequestClient req, Location loc )
 		valStr.erase(valStr.length() - 1);
 		val = strtol(valStr.c_str(), 0, 10);
 		val *= 1024 * 1024;
+		std::cout << "VAL:" << val << std::endl;
+		std::cout << "CONTENT:" << content << std::endl;
 		if (content > val)
 			throw RequestClient::ErrorRequest(413, "./not_found/413.html", "Request Entity Too Large");
 	}
@@ -314,14 +324,14 @@ std::string	Response::findFile( Location serv, std::string target, int err )
 				return filename;
 			}
 		}
-		/*if (i == serv.GetIndex().size() && !serv.getAutoIndex())
-			throw RequestClient::ErrorRequest(403, "./not_found/403.html", "Forbidden");
-		else if (i == serv.GetIndex().size() && serv.getAutoIndex())
-		{
-			this->isCGI = 1;
-			this->dir = path.append(target);
-			return "./not_found/dir_list.php";
-		}*/
+		// if (i == serv.GetIndex().size() && !serv.getAutoIndex())
+		// 	throw RequestClient::ErrorRequest(403, "./not_found/403.html", "Forbidden");
+		// else if (i == serv.GetIndex().size() && serv.getAutoIndex())
+		// {
+		// 	this->isCGI = 1;
+		// 	this->dir = path.append(target);
+		// 	return "./not_found/dir_list.php";
+		// }
 			// throw RequestClient::ErrorRequest(404, "./not_found/404.html", "Not Found");
 	}
 	else
@@ -366,8 +376,8 @@ void	Response::fillLoc(Server serv, Location* loc)
 	if (loc->GetErrorPage().empty())
 		loc->SetErrorPage(serv.GetErrorPage());
 	// pb je peux pas faire diff si c pas precise ou si c mis sur off
-	//if (!loc->getAutoIndex())
-		//loc->setAutoIndex(serv.getAutoIndex());
+	// if (!loc->getAutoIndex())
+	// 	loc->setAutoIndex(serv.getAutoIndex());
 }
 
 void	Response::addBody(std::string filename, RequestClient req, std::string )

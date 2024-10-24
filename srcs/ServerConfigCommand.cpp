@@ -33,7 +33,7 @@ bool Server::IsValidRoot(const std::string& root)
 
 	if (root.empty() || stat(root.c_str(), &info) != 0 || !S_ISDIR(info.st_mode))
 		return false;
-    dir = opendir(root.c_str());
+	dir = opendir(root.c_str());
 	if (!dir)
 		return false;
 	struct dirent* ent = readdir(dir);
@@ -149,7 +149,7 @@ void Server::ValidateNginxConfig()
 	if (!this->client_body_limit_size.empty() && !IsValidClientBodySize(this->client_body_limit_size))
 		std::cerr << "Invalid client body size: " << this->client_body_limit_size << std::endl;
 
-	if (!this->alias.empty() && !IsValidAlias(this->alias))			
+	if (!this->alias.empty() && !IsValidAlias(this->alias))
 		std::cerr << "Invalid alias: " << this->alias << std::endl;
 
 	if (!this->cgi_pass.empty() && !IsValidCgiPass(this->cgi_pass))

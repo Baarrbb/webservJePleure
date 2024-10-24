@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:41:14 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/22 00:19:13 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/23 17:28:31 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,8 +18,10 @@
 class RequestClient
 {
 	public:
+		RequestClient( void );
 		RequestClient(std::string &);
 		~RequestClient( void );
+		RequestClient	&operator=(const RequestClient &);
 
 		int									getError( void ) const;
 		std::string							getMsgError( void ) const;
@@ -35,6 +37,7 @@ class RequestClient
 		void		setTarget( std::string );
 		void		setError( int );
 		void		setMsgError( std::string );
+		void		setPath( std::string );
 
 	private:
 		void	badSyntax( std::string line );

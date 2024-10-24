@@ -470,7 +470,38 @@ Si premiere ligne >= 8192
 `502 Bad Gateway`
 
 
+`500 Internal Server Error` (quand erreur sur cgi)
+
+`501 Not Implemented`
+
+`504 Gateway Time-out` reponse cgi trop longue
 
 # Pourquoi quand pas server_name dans /etc/hosts
 
 telnet n'utilise pas de DNS alors que mozilla oui.
+
+
+
+```
+2024/10/23 12:29:22 [error] 7#7: *45 FastCGI sent in stderr: "PHP message: PHP Warning:  Undefined array key "data" in /var/www/test/post.php on line 14" while reading response header from upstream, client: 172.18.0.1, server: bsuc.42.fr, request: "POST /post.php HTTP/1.1", upstream: "fastcgi://172.18.0.2:9000", host: "bsuc.42.fr"
+```
+
+```
+2024/10/23 12:32:34 [error] 7#7: *47 FastCGI sent in stderr: "PHP message: PHP Fatal error:  Uncaught Error: Undefined constant "INFO_GENERALE" in /var/www/test/random.php:4
+Stack trace:
+#0 {main}
+  thrown in /var/www/test/random.php on line 4" while reading response header from upstream, client: 172.18.0.1, server: bsuc.42.fr, request: "GET /random.php HTTP/1.1", upstream: "fastcgi://172.18.0.2:9000", host: "bsuc.42.fr:7700"
+```
+
+
+```
+curl -X POST http://bsuc.42.fr/post.php \
+  -H "Transfer-Encoding: chunked" \
+  --data-binary @- << EOF
+5
+Hello
+6
+ World
+0
+EOF
+```

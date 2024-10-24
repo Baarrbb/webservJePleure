@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 14:39:02 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/23 01:29:32 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/24 16:05:22 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,16 @@ CGI::~CGI( void )
 
 void	CGI::addEnvp(RequestClient req)
 {
-	this->env.push_back("CONTENT_LENGTH=" + req.getOptions("content-length"));
+	if (req.getOptions("content-length").compare(""))
+		this->env.push_back("CONTENT_LENGTH=" + req.getOptions("content-length"));
+	else
+	{
+		std::stringstream len;
+		len << this->bodyClient.length();
+		this->env.push_back("CONTENT_LENGTH=" + len.str());
+	}
+
+	this->env.push_back("GATEWAY_INTERFACE=CGI/1.1");
 	this->env.push_back("CONTENT_TYPE=" + req.getOptions("content-type"));
 	this->env.push_back("PATH_INFO=" + this->pathInfo);
 	this->env.push_back("QUERY_STRING=" + req.getQuery());
@@ -75,12 +84,13 @@ void	CGI::toCGI( std::string filename, RequestClient req, int pipefd[2], int pip
 		const_cast<char*>((this->env[5]).c_str()),
 		const_cast<char*>((this->env[6]).c_str()),
 		const_cast<char*>((this->env[7]).c_str()),
+		const_cast<char*>((this->env[8]).c_str()),
 		NULL
 	};
 
 	const char *args[] = {this->cgiPass.c_str(), filename.c_str(), NULL};
-	std::cerr << this->cgiPass << std::endl;
-	std::cerr << filename << std::endl;
+	// std::cerr << this->cgiPass << std::endl;
+	// std::cerr << filename << std::endl;
 	if (execve(this->cgiPass.c_str(), const_cast<char* const*>(args), envp) == -1)
 	{
 		std::cerr << "Error: execve: " << strerror(errno) << std::endl;
@@ -99,6 +109,8 @@ void	CGI::getReturnCGI( RequestClient req, int pipefd[2], int pipefd_stdin[2], i
 
 	if (!req.getMethod().compare("POST") && !this->bodyClient.empty())
 	{
+		// std::cout << "CGIBODY:" << this->bodyClient << std::endl;
+		// std::cout << "CGIBODY:" << this->bodyClient.size() << std::endl;
 		if (write(pipefd_stdin[1], this->bodyClient.c_str(), this->bodyClient.size()) < 0)
 		{
 			std::cerr << "Error: write: " << strerror(errno) << std::endl;

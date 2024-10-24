@@ -9,8 +9,22 @@
     <h1>Tester les requêtes POST</h1>
 
     <?php
+
+	// $input = fopen('php://input', 'r');
+	// $data = '';
+	// while ($line = fgets($input)) {
+	// 	$data .= $line;
+	// }
+	// echo "Données reçues via input : " . $data;
+
     $message = "";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+		// var_dump($_POST);
+		// foreach ($_SERVER as $key => $value) {
+		// 	echo $key . ': ' . $value . "\n";
+		// }
+		// $input = file_get_contents('php://input');
+		// echo "Données reçues via php://input : " . $input;
         $message = htmlspecialchars($_POST['data']); // Échapper les caractères spéciaux pour éviter XSS
     }
     ?>

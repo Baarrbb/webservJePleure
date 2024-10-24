@@ -158,10 +158,12 @@ int	Config::ServerStart(char **envp)
 
 void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 {
-	int			rd;
-	char		buffer[8192] = {0};
-	std::string	reqString;
-	std::string	body;
+	int				rd;
+	char			buffer[8192] = {0};
+	std::string		reqString;
+	std::string		body;
+	bool			first = true;
+	RequestClient	req;
 
 	while (1)
 	{
@@ -176,17 +178,60 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 		if (endHeaders != std::string::npos)
 		{
 			std::string		headers = reqString.substr(0, endHeaders);
-			// rajouter un if pour verifier si bien POST et content-ength ?
 			body = reqString.substr(endHeaders + 4, reqString.length());
-			RequestClient	req(headers);
-			if (!req.getMethod().compare("POST") && req.getOptions("content-length").compare(""))
+			if (first)
 			{
-				if (static_cast<long>(body.length()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
+				RequestClient getFirst(headers);
+				req = getFirst;
+				first = false;
+			}
+			// if (!req.getMethod().compare("POST") && req.getOptions("content-length").compare(""))
+			// {
+			// 	if (static_cast<long>(body.length()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
+			// 	{
+			// 		body.append(buffer, rd);
+			// 		continue;
+			// 	}
+			// }
+			if (!req.getMethod().compare("POST"))
+			{
+				try
 				{
-					body.append(buffer, rd);
-					continue;
+					if (req.getOptions("content-length").compare("") && req.getOptions("transfer-encoding").compare(""))
+						throw RequestClient::ErrorRequest(400, "not_found/400.html", "Bad Request");
+					if (req.getOptions("content-length").compare(""))
+					{
+						if (static_cast<long>(body.length()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
+						{
+							body.append(buffer, rd);
+							continue;
+						}
+					}
+					if (req.getOptions("transfer-encoding").compare(""))
+					{
+						std::string val = req.getOptions("transfer-encoding");
+						for(size_t i = 0; i < val.length(); i++)
+							val[i] = std::tolower(val[i]);
+						if (val.compare("chunked"))
+							throw RequestClient::ErrorRequest(501, "not_found/501.html", "Not Implemented");
+						if (body.find("\r\n0\r\n") == std::string::npos)
+						{
+							body.append(buffer, rd);
+							continue;
+						}
+						body = this->processChunkedBody(body);
+					}
+				}
+				catch(RequestClient::ErrorRequest& e)
+				{
+					req.setError(e.getError());
+					req.setPath("/");
+					req.setTarget(e.getTarget());
+					req.setMsgError(e.getMsg());
 				}
 			}
+			if (body.find("\r\n") != std::string::npos)
+				body = body.substr(0, body.find("\r\n"));
 			Response	rep( req, body, this->_servers, host, port );
 			std::string	response = rep.getFull();
 			if (send(clientFd, response.c_str(), response.length(), 0) == -1)
@@ -194,9 +239,42 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 				std::cerr << "Error: send: " << strerror(errno) << std::endl;
 				return ;
 			}
-
 			break ;
 		}
 	}
 }
 
+std::string	Config::processChunkedBody( std::string &body )
+{
+	std::string	tmp = body;
+	std::string	bodyUnchunk;
+	long		sizeData;
+	long		realSize;
+	char		*end;
+
+	// std::cout << "PROCESSCHUNKED:" << tmp << "." << std::endl;
+
+	while (!tmp.empty())
+	{
+		size_t endLine = tmp.find("\r\n");
+		std::string lineSize = tmp.substr(0, endLine);
+		// std::cout << "LINESIZE:" << lineSize << std::endl;
+		sizeData = strtol(lineSize.c_str(), &end, 16);
+		// std::cout << "sizeData:" << sizeData << std::endl;
+		if (end == lineSize.c_str() || errno == EINVAL)
+			throw RequestClient::ErrorRequest(400, "not_found/400.html", "Bad Request");
+		if (sizeData == 0)
+			return bodyUnchunk;
+		tmp.erase(0, endLine + 2);
+		endLine = tmp.find("\r\n");
+		std::string data = tmp.substr(0, endLine);
+		realSize = data.length();
+		// std::cout << "realSize:" << realSize << std::endl;
+		// std::cout << "LINE:" << data << std::endl;
+		if (sizeData != realSize)
+			throw RequestClient::ErrorRequest(400, "not_found/400.html", "Bad Request");
+		bodyUnchunk += data;
+		tmp.erase(0, endLine + 2);
+	}
+	return bodyUnchunk;
+}
