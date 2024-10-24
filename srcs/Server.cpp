@@ -60,6 +60,8 @@ Server & Server::operator = (const Server &copy)
 		this->error_page = copy.error_page;
 		this->test = copy.test;
 		this->autoindex = copy.autoindex;
+		this->octet_body_size = copy.octet_body_size;
+		this->code_error_pages = copy.code_error_pages;
 	}
 	return *this;
 }
@@ -117,7 +119,7 @@ std::ostream	&operator<<(std::ostream &out, Server &to_write) // rajouter le con
 	out << "alias : ";to_write.WriteAlias();
 	out << "cgipass : ";to_write.WriteCgiPass();
 	out << "clientbodysize : ";to_write.WriteClientBodyBufferSize();
-	out << "location :"; to_write.WriteLocation();
 	out << "autoindex :" << to_write.getAutoIndex() << std::endl;
+	out << "location :"; to_write.WriteLocation();
 	return (out);
 }

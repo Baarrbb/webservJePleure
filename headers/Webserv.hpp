@@ -6,12 +6,15 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 16:42:39 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/24 16:29:09 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/24 18:57:48 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
+
+# define JAUNE "\x1B[33m"
+# define RESET "\033[0m"
 
 #include <iostream>
 #include <vector>

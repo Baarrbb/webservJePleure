@@ -474,7 +474,7 @@ Si premiere ligne >= 8192
 
 `501 Not Implemented`
 
-`504 Gateway Time-out` reponse cgi trop longue
+`504 Gateway Time-out` reponse cgi trop longue ok
 
 # Pourquoi quand pas server_name dans /etc/hosts
 

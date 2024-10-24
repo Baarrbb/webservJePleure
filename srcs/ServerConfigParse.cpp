@@ -94,7 +94,7 @@ static int ErrorPage(std::istringstream &iss, std::string&option, std::vector<in
 				return (0);
 		}
 		else
-			option = value;
+			option = value.substr(0, value.length() - 1);
 	}
 	if (!(iss >> end) || options.empty() == false || end.empty() == false || value[value.size() - 1] != ';')
 		return (0);
@@ -105,12 +105,10 @@ static int	OnOrOff(std::istringstream &iss, std::string& option)
 {
 	std::string value;
 	std::string end;
-	if (iss >> value && value.empty() != 0)
+	if (iss >> value)
 	{
 		if (value.compare("on;") == 0 || value.compare("off;") == 0)
 			option = value.substr(0, value.size() - 1);
-		//else if (value.compare("off;") == 0)
-		//	option = false;
 		else
 			return (0);
 	}

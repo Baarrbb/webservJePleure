@@ -58,6 +58,8 @@ class Server
 		void					SetClientBodyBufferSize(const std::string& value);
 		void					SetSocket(bool info);
 		void					setAutoIndex( std::string );
+		void					setBodyLimit( long );
+		void					setCodeError( std::vector<int> codes );
 
 		// Get methods
 		std::vector<Location*>		GetLocation() const;// sans index ca donne le vector en entier
@@ -79,6 +81,8 @@ class Server
 		std::string					GetClientBodyBufferSize() const;
 		bool						GetSocket(const int &index) const;
 		std::string					getAutoIndex( void ) const;
+		long						getBodyLimit( void ) const;
+		std::vector<int>			getCodeError( void ) const;
 		
 		// Write methods
 		void					WriteServerName() const;

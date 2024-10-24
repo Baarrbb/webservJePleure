@@ -1,3 +1,4 @@
 <?php
 
-	phpinfo();
+	while(1)
+		phpinfo();

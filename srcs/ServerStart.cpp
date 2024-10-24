@@ -224,14 +224,15 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 				}
 				catch(RequestClient::ErrorRequest& e)
 				{
+					req.setMethod("GET");
 					req.setError(e.getError());
 					req.setPath("/");
 					req.setTarget(e.getTarget());
 					req.setMsgError(e.getMsg());
 				}
 			}
-			if (body.find("\r\n") != std::string::npos)
-				body = body.substr(0, body.find("\r\n"));
+			// if (body.find("\r\n") != std::string::npos)
+			// 	body = body.substr(0, body.find("\r\n"));
 			Response	rep( req, body, this->_servers, host, port );
 			std::string	response = rep.getFull();
 			if (send(clientFd, response.c_str(), response.length(), 0) == -1)

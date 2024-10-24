@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 17:36:45 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/23 01:30:40 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/24 22:53:36 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,13 +48,13 @@ class Response
 		Location*	findLocationInLocation( std::vector<Location*>, std::string );
 		void		checkMethodsAllowed( Location, std::string );
 		std::string	findFile( Location, std::string, int );
-		void		addBody( std::string, RequestClient, std::string );
+		void		addBody( std::string, RequestClient, Location );
 		std::string	lengthBody( void );
 		void		constructResponse( RequestClient );
 		void		checkCGI( Server , std::string );
 		std::string	extractPathInfo( std::string );
 		void		addCookieValues( void );
-		void		checkLimitBodySize( RequestClient, Location );
+		void		checkLimitBodySize( RequestClient, Location, size_t );
 		void		checkCGIHeadersStatusCode( void );
 };
 

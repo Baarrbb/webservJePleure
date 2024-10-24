@@ -61,6 +61,15 @@ void	Server::setAutoIndex(std::string i)
 	this->autoindex = i;
 }
 
+void	Server::setBodyLimit( long o )
+{
+	this->octet_body_size = o;
+}
+
+void	Server::setCodeError( std::vector<int> codes )
+{
+	this->code_error_pages = codes;
+}
 
 
 // Get methods
@@ -162,7 +171,15 @@ std::string	Server::getAutoIndex( void ) const
 	return this->autoindex;
 }
 
+long	Server::getBodyLimit( void ) const
+{
+	return this->octet_body_size;
+}
 
+std::vector<int>	Server::getCodeError( void ) const
+{
+	return this->code_error_pages;
+}
 
 // Write
 

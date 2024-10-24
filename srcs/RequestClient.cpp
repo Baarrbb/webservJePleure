@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:45:26 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/23 17:28:17 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/25 01:00:17 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ RequestClient::RequestClient(std::string &req) : error(0), cookie(false)
 	}
 	catch(RequestClient::ErrorRequest &e)
 	{
+		// this->method = "GET"; a voir ??
 		this->error = e.getError();
 		this->target = e.getTarget();
 		this->msgError = e.getMsg();
@@ -315,6 +316,11 @@ std::string	RequestClient::getQuery( void ) const
 }
 
 // Setters
+
+void	RequestClient::setMethod( std::string method )
+{
+	this->method = method;
+}
 
 void	RequestClient::setTarget( std::string file )
 {

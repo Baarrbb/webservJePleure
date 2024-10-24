@@ -75,11 +75,17 @@ bool Server::IsValidClientBodySize(const std::string& size)
 	body_size = strtol(size.c_str(), &endptr, 10);
 	if (errno == ERANGE || body_size < 0)
 		return false;
+	if (!*endptr)
+	{
+		this->octet_body_size = body_size;
+		return true;
+	}
 	delim = tolower(*endptr);
 	switch (delim)
 	{
 		case 'k':
 			this->octet_body_size = body_size * 1024;
+			std::cout << JAUNE "BODY_SIZE:" << this->octet_body_size << RESET << std::endl;
 			break;
 		case 'm':
 			this->octet_body_size = body_size * 1024 * 1024;
@@ -147,7 +153,7 @@ void Server::ValidateNginxConfig()
 			std::cerr << "Invalid allow methods: " << *it << std::endl;
 			
 	if (!this->client_body_limit_size.empty() && !IsValidClientBodySize(this->client_body_limit_size))
-		std::cerr << "Invalid client body size: " << this->client_body_limit_size << std::endl;
+		std::cerr << JAUNE "Invalid client body size: " << this->client_body_limit_size << RESET << std::endl;
 
 	if (!this->alias.empty() && !IsValidAlias(this->alias))
 		std::cerr << "Invalid alias: " << this->alias << std::endl;

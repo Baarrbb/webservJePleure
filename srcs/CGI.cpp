@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 14:39:02 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/24 16:05:22 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/25 00:47:15 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,11 @@ void	CGI::toCGI( std::string filename, RequestClient req, int pipefd[2], int pip
 	};
 
 	const char *args[] = {this->cgiPass.c_str(), filename.c_str(), NULL};
-	// std::cerr << this->cgiPass << std::endl;
-	// std::cerr << filename << std::endl;
+
 	if (execve(this->cgiPass.c_str(), const_cast<char* const*>(args), envp) == -1)
 	{
 		std::cerr << "Error: execve: " << strerror(errno) << std::endl;
+		//ICi je throw 500 ??
 		exit(127);
 	}
 }
@@ -109,8 +109,6 @@ void	CGI::getReturnCGI( RequestClient req, int pipefd[2], int pipefd_stdin[2], i
 
 	if (!req.getMethod().compare("POST") && !this->bodyClient.empty())
 	{
-		// std::cout << "CGIBODY:" << this->bodyClient << std::endl;
-		// std::cout << "CGIBODY:" << this->bodyClient.size() << std::endl;
 		if (write(pipefd_stdin[1], this->bodyClient.c_str(), this->bodyClient.size()) < 0)
 		{
 			std::cerr << "Error: write: " << strerror(errno) << std::endl;
@@ -119,6 +117,8 @@ void	CGI::getReturnCGI( RequestClient req, int pipefd[2], int pipefd_stdin[2], i
 	}
 	close(pipefd_stdin[1]);
 
+	std::time_t start = std::time(NULL);
+	std::time_t end;
 	int rd;
 	while ((rd = read(pipefd[0], cgi_output, sizeof(cgi_output) - 1)) > 0)
 	{
@@ -127,6 +127,9 @@ void	CGI::getReturnCGI( RequestClient req, int pipefd[2], int pipefd_stdin[2], i
 			cgi_output[rd] = '\0';
 			output += cgi_output;
 		}
+		end = std::time(NULL);
+		if (difftime(end, start) > 10)
+			throw RequestClient::ErrorRequest(504, "./not_found/504.html", "Gateway Timeout");
 	}
 	if (rd == -1)
 	{

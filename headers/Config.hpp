@@ -19,7 +19,6 @@ class Config
 		int	ServerStart(char **envp);
 		int	IsACgi();
 
-
 		int					ServerNameByServer();
 		void				AddServer(Server *server); // rajoute un simpel server aux servers
 		void				AddServer();
@@ -41,7 +40,6 @@ class Config
 		int	Gettest() const;
 		void Settest(int test);
 
-		
 	private:
 		int						test;
 		std::string				_filename;

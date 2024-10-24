@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 18:00:18 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/24 16:47:38 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/25 01:00:13 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,23 +16,20 @@
 Response::Response( RequestClient req, std::string bodyClient, std::vector<Server*> serv, std::string host, uint16_t port )
 	: version("HTTP/1.1"), isCGI(false), bodyClient(bodyClient)
 {
-	// std::cout << "host:port " << host << ":" << port << std::endl;
-	std::cout << req.getPath() << std::endl;
-
 	Server		server;
 	Location	loc;
 	try
 	{
 		int err = req.getError();
 		server = this->findConfig(serv, host, port, req.getHost());
+
 		loc = this->findLocation(server, req.getPath());
 
 		std::cout << "LOC:" << loc << std::endl;
 
-		// this->checkLimitBodySize(req, loc);
-		// if (err != 400 && err != 505) // == 0 || == 405
 		if (err == 0 || err == 405)
 		{
+			this->checkLimitBodySize(req, loc, bodyClient.length());
 			this->checkMethodsAllowed(loc, req.getMethod());
 			if (isCGI)
 			{
@@ -55,6 +52,7 @@ Response::Response( RequestClient req, std::string bodyClient, std::vector<Serve
 	}
 	catch(RequestClient::ErrorRequest& e)
 	{
+		// req.setMethod("GET"); a voir ??
 		req.setError(e.getError());
 		req.setTarget(e.getTarget());
 		req.setMsgError(e.getMsg());
@@ -64,7 +62,7 @@ Response::Response( RequestClient req, std::string bodyClient, std::vector<Serve
 	std::cout << "FILE:" << this->file << std::endl;
 
 	if (req.getError() != 301)
-		this->addBody(this->file, req, this->cgiBody);
+		this->addBody(this->file, req, loc);
 
 	if (!req.getError())
 	{
@@ -146,6 +144,7 @@ Location	Response::findLocation(Server serv, std::string target)
 		if (!serv.GetLocation(i)->getPathLoc().compare(target))
 		{
 			this->fillLoc(serv, serv.GetLocation(i));
+			// std::cout << "APRES AVOIR FILL:" << *serv.GetLocation(i) << std::endl;
 			return (*serv.GetLocation(i));
 		}
 	}
@@ -208,52 +207,16 @@ Location*	Response::findLocationInLocation(std::vector<Location*> newLoc, std::s
 	return NULL;
 }
 
-void	Response::checkLimitBodySize( RequestClient req, Location loc )
+void	Response::checkLimitBodySize( RequestClient req, Location loc, size_t sizeBody )
 {
-	if (req.getMethod().compare("POST") || loc.GetClientBodyBufferSize().empty())
+	if (req.getMethod().compare("POST") || loc.getBodyLimit() == -1)
 		return;
+
+	std::cout << JAUNE << static_cast<long>(sizeBody) << std::endl;
+	std::cout << loc.getBodyLimit() << RESET << std::endl;
+	if (static_cast<long>(sizeBody) > loc.getBodyLimit())
+		throw RequestClient::ErrorRequest(413, "./not_found/413.html", "Request Entity Too Large");
 	
-	std::string	valStr = loc.GetClientBodyBufferSize();
-	long	val;
-	std::string	contentStr = req.getOptions("content-length");
-	long content = strtol(contentStr.c_str(), 0 , 10);
-	std::cout << "VAL:" << valStr << std::endl;
-	std::cout << "CONTENT:" << contentStr << std::endl;
-	if (loc.GetClientBodyBufferSize().find("k") != std::string::npos
-		|| loc.GetClientBodyBufferSize().find("K") != std::string::npos)
-	{
-		valStr.erase(valStr.length() - 1);
-		val = strtol(valStr.c_str(), 0, 10);
-		val *= 1024;
-		if (content > val)
-			throw RequestClient::ErrorRequest(413, "./not_found/413.html", "Request Entity Too Large");
-	}
-	else if (loc.GetClientBodyBufferSize().find("m") != std::string::npos
-		|| loc.GetClientBodyBufferSize().find("M") != std::string::npos)
-	{
-		valStr.erase(valStr.length() - 1);
-		val = strtol(valStr.c_str(), 0, 10);
-		val *= 1024 * 1024;
-		std::cout << "VAL:" << val << std::endl;
-		std::cout << "CONTENT:" << content << std::endl;
-		if (content > val)
-			throw RequestClient::ErrorRequest(413, "./not_found/413.html", "Request Entity Too Large");
-	}
-	else if (loc.GetClientBodyBufferSize().find("g") != std::string::npos
-		|| loc.GetClientBodyBufferSize().find("G") != std::string::npos)
-	{
-		valStr.erase(valStr.length() - 1);
-		val = strtol(valStr.c_str(), 0, 10);
-		val *= 1024 * 1024 * 1024;
-		if (content > val)
-			throw RequestClient::ErrorRequest(413, "./not_found/413.html", "Request Entity Too Large");
-	}
-	else {
-		valStr.erase(valStr.length() - 1);
-		val = strtol(valStr.c_str(), 0, 10);
-		if (content > val)
-			throw RequestClient::ErrorRequest(413, "./not_found/413.html", "Request Entity Too Large");
-	}
 }
 
 void	Response::checkMethodsAllowed( Location serv, std::string method )
@@ -269,7 +232,9 @@ void	Response::checkMethodsAllowed( Location serv, std::string method )
 			break ;
 	}
 	if (i == serv.GetAllowMethods().size())
+	{
 		throw RequestClient::ErrorRequest(403, "./not_found/403.html", "Forbidden");
+	}
 }
 
 void	Response::checkCGI(Server serv, std::string path)
@@ -324,14 +289,14 @@ std::string	Response::findFile( Location serv, std::string target, int err )
 				return filename;
 			}
 		}
-		// if (i == serv.GetIndex().size() && !serv.getAutoIndex())
-		// 	throw RequestClient::ErrorRequest(403, "./not_found/403.html", "Forbidden");
-		// else if (i == serv.GetIndex().size() && serv.getAutoIndex())
-		// {
-		// 	this->isCGI = 1;
-		// 	this->dir = path.append(target);
-		// 	return "./not_found/dir_list.php";
-		// }
+		if (i == serv.GetIndex().size() && (serv.getAutoIndex().empty() || !serv.getAutoIndex().compare("off")) )
+			throw RequestClient::ErrorRequest(403, "./not_found/403.html", "Forbidden");
+		else if (i == serv.GetIndex().size() && !serv.getAutoIndex().compare("on"))
+		{
+			this->isCGI = 1;
+			this->dir = path.append(target);
+			return "./not_found/dir_list.php";
+		}
 			// throw RequestClient::ErrorRequest(404, "./not_found/404.html", "Not Found");
 	}
 	else
@@ -339,19 +304,7 @@ std::string	Response::findFile( Location serv, std::string target, int err )
 
 	file.open(filename.c_str());
 	if (!file.is_open())
-	{
-		if (serv.GetErrorPage().empty())
-			throw RequestClient::ErrorRequest(404, "./not_found/404.html", "Not Found");
-		else
-		{
-			std::string errorPage = serv.GetRoot() + serv.GetErrorPage();
-			file.open(errorPage.c_str());
-			if (!file.is_open())
-				throw RequestClient::ErrorRequest(404, "./not_found/404.html", "Not Found");
-			file.close();
-			return errorPage;
-		}
-	}
+		throw RequestClient::ErrorRequest(404, "./not_found/404.html", "Not Found");
 
 	file.close();
 	return filename;
@@ -371,27 +324,42 @@ void	Response::fillLoc(Server serv, Location* loc)
 		for (size_t i = 0; i < serv.GetAllowMethods().size(); i++)
 			loc->SetAllowMethods(serv.GetAllowMethods(i));
 	}
-	if (loc->GetClientBodyBufferSize().empty())
-		loc->SetAllowMethods(serv.GetClientBodyBufferSize());
+	if (loc->getAutoIndex().empty())
+		loc->setAutoIndex(serv.getAutoIndex());
+	if (loc->getBodyLimit() == -1)
+		loc->setBodyLimit(serv.getBodyLimit());
 	if (loc->GetErrorPage().empty())
+	{
 		loc->SetErrorPage(serv.GetErrorPage());
-	// pb je peux pas faire diff si c pas precise ou si c mis sur off
-	// if (!loc->getAutoIndex())
-	// 	loc->setAutoIndex(serv.getAutoIndex());
+		loc->setCodeError(serv.getCodeError());
+	}
 }
 
-void	Response::addBody(std::string filename, RequestClient req, std::string )
+void	Response::addBody(std::string filename, RequestClient req, Location loc)
 {
-	std::ifstream		file(filename.c_str());
-	std::stringstream	fileStream;
-	fileStream << file.rdbuf();
+	std::cout << "ERR:" << req.getError() << std::endl;
+	std::vector<int> tmp = loc.getCodeError();
+	std::vector<int>::iterator it = find(tmp.begin(), tmp.end(), req.getError());
 
-	if (this->isCGI && req.getMethod().compare("DELETE"))
+	if (req.getError() != 0 && it != tmp.end())
+	{
+		try {
+			filename = this->findFile(loc, loc.GetErrorPage(), 0);
+			std::cout << "filename:" << filename << std::endl;
+		}
+		catch(...)
+		{
+		}
+	}
+	if (this->isCGI && req.getMethod().compare("DELETE") && req.getError() == 0)
 		this->body = this->cgiBody + "\r\n";
 	else if (!req.getMethod().compare("DELETE"))
 		remove(filename.c_str());
 	else
 	{
+		std::ifstream		file(filename.c_str());
+		std::stringstream	fileStream;
+		fileStream << file.rdbuf();
 		std::string	fileContent = fileStream.str();
 		this->body = fileContent + "\r\n";
 	}

@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 17:41:14 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/23 17:28:31 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/24 19:46:22 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class RequestClient
 		std::string							getPath( void ) const;
 		std::string							getQuery( void ) const;
 
+		void		setMethod( std::string );
 		void		setTarget( std::string );
 		void		setError( int );
 		void		setMsgError( std::string );
