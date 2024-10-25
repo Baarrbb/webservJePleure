@@ -98,7 +98,7 @@ static void	closepoll(int num_fds, struct pollfd *poll_fds)
 	num_fds = 0;
 }
 
-static int newtrucjspencore(struct pollfd *poll_fds, int i, char *s, uint16_t *port)
+static int GetClientInfos(struct pollfd *poll_fds, int i, char *s, uint16_t *port)
 {
 	struct sockaddr_storage server_addr;
 	socklen_t server_size = sizeof(server_addr);
@@ -113,7 +113,7 @@ static int newtrucjspencore(struct pollfd *poll_fds, int i, char *s, uint16_t *p
 	return (0);
 }
 
-static int newtestacceptlol(struct pollfd *poll_fds, int i,	int *num_fds)
+static int NewClientConnexion(struct pollfd *poll_fds, int i,	int *num_fds)
 {
 	struct sockaddr_storage their_addr;
 	socklen_t their_size = sizeof(their_addr);
@@ -162,19 +162,23 @@ int	Config::ServerStart(char **envp)
 			{
 				if (i < num_srvs)
 				{
-					if (newtestacceptlol(poll_fds, i, &num_fds) == 1)
+					if (NewClientConnexion(poll_fds, i, &num_fds) == 1)
 						return 1;
 				}
 				else
 				{
 					uint16_t	port;
-					if (newtrucjspencore(poll_fds, i, s, &port) == 1)
+					if (GetClientInfos(poll_fds, i, s, &port) == 1)
 						return (1);
 					std::cout << "server is :" << s << " " << port << std::endl;
 					//read
 					this->processClientRequest(poll_fds[i].fd, std::string(s), port);
-					//read
+					//rajouter les cgi dans poll_fds
 					(void)envp;
+					/*si cgi pollfd
+					{
+						lire le cgi
+					}*/
 					//poll_fds[i].revents = POLLOUT;
 					close(poll_fds[i].fd);
 					poll_fds[i] = poll_fds[num_fds - 1]; 
@@ -183,7 +187,12 @@ int	Config::ServerStart(char **envp)
 			}
 			/*else if (poll_fds[i].revents & POLLOUT)
 			{
-				send response
+				send response 
+				check si cgi poll fd si cgi poll fd 
+				{
+					send reponse
+				}
+				sinn 
 				if (send(clientFd, response.c_str(), response.length(), 0) == -1)
 				{
 					std::cerr << "Error: send: " << strerror(errno) << std::endl;
