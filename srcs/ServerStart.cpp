@@ -62,14 +62,9 @@ int	Config::ServerCreate(int i, int y)
 	return (socketserverfd);
 }
 
-int	Config::ServerStart(char **envp)
+int Config::FillPollFd(struct pollfd *poll_fds, int *num_fds)
 {
 	int socketserverfd;
-	struct sockaddr_storage their_addr;
-	char s[INET6_ADDRSTRLEN];
-	struct pollfd poll_fds[CONNECTIONS];
-	int num_fds = 0;
-	int num_srvs = 0;
 
 	for (size_t y = 0; y < this->GetServer().size(); y++)
 	{
@@ -81,12 +76,71 @@ int	Config::ServerStart(char **envp)
 			{
 				if ((socketserverfd = this->ServerCreate(i, y)) == -1)
 					return (1);
-				poll_fds[num_fds].fd = socketserverfd;
-				poll_fds[num_fds].events = POLLIN;
-				num_fds++;
+				poll_fds[(*num_fds)].fd = socketserverfd;
+				poll_fds[(*num_fds)].events = POLLIN;
+				(*num_fds)++;
 			}
 		}
 	}
+	return (0);
+}
+
+static void	closepoll(int num_fds, struct pollfd *poll_fds)
+{
+	for (int i = 0; i < num_fds; ++i)
+	{
+		if (poll_fds[i].fd != -1)
+		{
+			close(poll_fds[i].fd);
+			poll_fds[i].fd = -1;
+		}
+	}
+	num_fds = 0;
+}
+
+static int newtrucjspencore(struct pollfd *poll_fds, int i, char *s, uint16_t *port)
+{
+	struct sockaddr_storage server_addr;
+	socklen_t server_size = sizeof(server_addr);
+
+	if (getsockname(poll_fds[i].fd, (struct sockaddr*)&server_addr, &server_size) == -1)
+	{
+		std::cerr << "sockname\n";
+		return 1;
+	}
+	inet_ntop(server_addr.ss_family, &(((struct sockaddr_in*)&server_addr)->sin_addr), s, INET_ADDRSTRLEN);
+	*port = ntohs(((struct sockaddr_in*)&server_addr)->sin_port);
+	return (0);
+}
+
+static int newtestacceptlol(struct pollfd *poll_fds, int i,	int *num_fds)
+{
+	struct sockaddr_storage their_addr;
+	socklen_t their_size = sizeof(their_addr);
+	char s[INET6_ADDRSTRLEN];
+	int new_fd = accept(poll_fds[i].fd, (struct sockaddr *)&their_addr, &their_size);
+	if (new_fd == -1)
+	{
+		std::cerr << "accept\n";
+		return 1;
+	}
+	inet_ntop(their_addr.ss_family, &(((struct sockaddr_in*)&their_addr)->sin_addr), s, sizeof s);
+	// std::cout << "server: got connection from " << std::string(s) << std::endl;
+	poll_fds[(*num_fds)].fd = new_fd;
+	poll_fds[(*num_fds)].events = POLLIN;
+	(*num_fds)++;
+	return 0;
+}
+
+int	Config::ServerStart(char **envp)
+{
+	char s[INET6_ADDRSTRLEN];
+	struct pollfd poll_fds[CONNECTIONS];
+	int num_fds = 0;
+	int num_srvs = 0;
+
+	if (FillPollFd(poll_fds, &num_fds) == 1)
+		return (1);
 	// std::cout <<"survive \n";
 	num_srvs = num_fds;
 	// std::cout << num_fds << std::endl;
@@ -94,8 +148,13 @@ int	Config::ServerStart(char **envp)
 	{
 		if (poll(poll_fds, num_fds, -1) == -1)
 		{
-			std::cerr << "poll" << std::endl;
-			return 1;
+			if (global_variable == 127)
+			{
+				closepoll(num_fds, poll_fds);
+				return(0);
+			}
+			std::cerr << "poll crash" << std::endl;
+			return (1);
 		}
 		for (int i = 0; i < num_fds; ++i)
 		{
@@ -103,54 +162,37 @@ int	Config::ServerStart(char **envp)
 			{
 				if (i < num_srvs)
 				{
-					socklen_t their_size = sizeof(their_addr);
-					int new_fd = accept(poll_fds[i].fd, (struct sockaddr *)&their_addr, &their_size);
-					if (new_fd == -1) {
-						std::cerr << "accept\n";
-						continue;
-					}
-					inet_ntop(their_addr.ss_family, &(((struct sockaddr_in*)&their_addr)->sin_addr), s, sizeof s);
-					// std::cout << "server: got connection from " << std::string(s) << std::endl;
-
-					poll_fds[num_fds].fd = new_fd;
-					poll_fds[num_fds].events = POLLIN;
-					num_fds++;
+					if (newtestacceptlol(poll_fds, i, &num_fds) == 1)
+						return 1;
 				}
 				else
 				{
-
-					struct sockaddr_storage server_addr;
-					socklen_t server_size = sizeof(server_addr);
-					if (getsockname(poll_fds[i].fd, (struct sockaddr*)&server_addr, &server_size) == -1)
-					{
-						std::cerr << "sockname\n";
-						return 1;
-					}
-					inet_ntop(server_addr.ss_family, &(((struct sockaddr_in*)&server_addr)->sin_addr), s, sizeof s);
-					uint16_t port = ntohs(((struct sockaddr_in*)&server_addr)->sin_port);
-					// std::cout << "server is :" << s << " " << port << std::endl;
-
+					uint16_t	port;
+					if (newtrucjspencore(poll_fds, i, s, &port) == 1)
+						return (1);
+					std::cout << "server is :" << s << " " << port << std::endl;
+					//read
 					this->processClientRequest(poll_fds[i].fd, std::string(s), port);
-	
+					//read
 					(void)envp;
+					//poll_fds[i].revents = POLLOUT;
 					close(poll_fds[i].fd);
 					poll_fds[i] = poll_fds[num_fds - 1]; 
 					num_fds--;
 				}
 			}
-			if (global_variable == 127)
+			/*else if (poll_fds[i].revents & POLLOUT)
 			{
-				for (int i = 0; i < num_fds; ++i)
+				send response
+				if (send(clientFd, response.c_str(), response.length(), 0) == -1)
 				{
-					if (poll_fds[i].fd != -1)
-					{
-		 				close(poll_fds[i].fd);
-						poll_fds[i].fd = -1;
-					}
+					std::cerr << "Error: send: " << strerror(errno) << std::endl;
+					return ;
 				}
-				num_fds = 0;
-				return(0);
-			}
+				close(poll_fds[i].fd);
+				poll_fds[i] = poll_fds[num_fds - 1]; 
+				num_fds--;
+			}*/
 		}
 	}
 	return (0);

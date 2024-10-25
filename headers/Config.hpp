@@ -19,6 +19,7 @@ class Config
 		int	ServerStart(char **envp);
 		int	IsACgi();
 
+		int					FillPollFd(struct pollfd *poll_fds, int *num_fds);
 		int					ServerNameByServer();
 		void				AddServer(Server *server); // rajoute un simpel server aux servers
 		void				AddServer();
