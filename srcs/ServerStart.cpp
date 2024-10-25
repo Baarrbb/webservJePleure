@@ -212,7 +212,6 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 	int				rd;
 	char			buffer[8192] = {0};
 	std::string		reqString;
-	std::string		body;
 	bool			first = true;
 	RequestClient	req;
 
@@ -229,7 +228,7 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 		if (endHeaders != std::string::npos)
 		{
 			std::string		headers = reqString.substr(0, endHeaders);
-			body = reqString.substr(endHeaders + 4, reqString.length());
+			this->bodyClient = reqString.substr(endHeaders + 4, reqString.length());
 			if (first)
 			{
 				RequestClient getFirst(headers);
@@ -244,9 +243,9 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 						throw RequestClient::ErrorRequest(400, "not_found/400.html", "Bad Request");
 					if (req.getOptions("content-length").compare(""))
 					{
-						if (static_cast<long>(body.length()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
+						if (static_cast<long>(this->bodyClient.length()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
 						{
-							body.append(buffer, rd);
+							this->bodyClient.append(buffer, rd);
 							continue;
 						}
 					}
@@ -257,12 +256,12 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 							val[i] = std::tolower(val[i]);
 						if (val.compare("chunked"))
 							throw RequestClient::ErrorRequest(501, "not_found/501.html", "Not Implemented");
-						if (body.find("\r\n0\r\n") == std::string::npos)
+						if (this->bodyClient.find("\r\n0\r\n") == std::string::npos)
 						{
-							body.append(buffer, rd);
+							this->bodyClient.append(buffer, rd);
 							continue;
 						}
-						body = this->processChunkedBody(body);
+						this->bodyClient = this->processChunkedBody(this->bodyClient);
 					}
 				}
 				catch(RequestClient::ErrorRequest& e)
@@ -276,7 +275,7 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 			}
 			// if (body.find("\r\n") != std::string::npos)
 			// 	body = body.substr(0, body.find("\r\n"));
-			Response	rep( req, body, this->_servers, host, port );
+			Response	rep( req, this->bodyClient, this->_servers, host, port );
 			std::string	response = rep.getFull();
 			// if (send(clientFd, response.c_str(), response.length(), 0) == -1)
 			// {

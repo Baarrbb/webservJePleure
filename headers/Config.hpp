@@ -45,6 +45,7 @@ class Config
 		int						test;
 		std::string				_filename;
 		std::vector<Server*>	_servers;
+		std::string				bodyClient;
 		void				processClientRequest( int, std::string, uint16_t );
 		std::string			processChunkedBody( std::string& );
 		void				responseClient( int , std::string );
