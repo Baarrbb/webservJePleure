@@ -47,6 +47,7 @@ class Config
 		std::vector<Server*>	_servers;
 		void				processClientRequest( int, std::string, uint16_t );
 		std::string			processChunkedBody( std::string& );
+		void				responseClient( int , std::string );
 };
 
 std::ostream	&operator<<(std::ostream &out, Config &to_write); //rajouter le const apr les tests

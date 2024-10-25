@@ -236,14 +236,6 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 				req = getFirst;
 				first = false;
 			}
-			// if (!req.getMethod().compare("POST") && req.getOptions("content-length").compare(""))
-			// {
-			// 	if (static_cast<long>(body.length()) < strtol(req.getOptions("content-length").c_str(), 0, 10))
-			// 	{
-			// 		body.append(buffer, rd);
-			// 		continue;
-			// 	}
-			// }
 			if (!req.getMethod().compare("POST"))
 			{
 				try
@@ -286,13 +278,23 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 			// 	body = body.substr(0, body.find("\r\n"));
 			Response	rep( req, body, this->_servers, host, port );
 			std::string	response = rep.getFull();
-			if (send(clientFd, response.c_str(), response.length(), 0) == -1)
-			{
-				std::cerr << "Error: send: " << strerror(errno) << std::endl;
-				return ;
-			}
+			// if (send(clientFd, response.c_str(), response.length(), 0) == -1)
+			// {
+			// 	std::cerr << "Error: send: " << strerror(errno) << std::endl;
+			// 	return ;
+			// }
+			this->responseClient(clientFd, response);
 			break ;
 		}
+	}
+}
+
+void	Config::responseClient(int clientFd, std::string response)
+{
+	if (send(clientFd, response.c_str(), response.length(), 0) == -1)
+	{
+		std::cerr << "Error: send: " << strerror(errno) << std::endl;
+		return ;
 	}
 }
 

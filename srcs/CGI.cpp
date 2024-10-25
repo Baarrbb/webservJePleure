@@ -6,7 +6,7 @@
 /*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 14:39:02 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/25 00:47:15 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/25 16:46:54 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,10 @@ void	CGI::getReturnCGI( RequestClient req, int pipefd[2], int pipefd_stdin[2], i
 		}
 		end = std::time(NULL);
 		if (difftime(end, start) > 10)
+		{
+			kill(pid, SIGKILL);
 			throw RequestClient::ErrorRequest(504, "./not_found/504.html", "Gateway Timeout");
+		}
 	}
 	if (rd == -1)
 	{
