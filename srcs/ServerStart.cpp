@@ -62,7 +62,7 @@ int	Config::ServerCreate(int i, int y)
 	return (socketserverfd);
 }
 
-int Config::FillPollFd(struct pollfd *poll_fds, int *num_fds)
+int Config::FillPollFd(struct pollfd *poll_fds, int *num_fds, std::map<int, std::string> &state)
 {
 	int socketserverfd;
 
@@ -76,6 +76,7 @@ int Config::FillPollFd(struct pollfd *poll_fds, int *num_fds)
 			{
 				if ((socketserverfd = this->ServerCreate(i, y)) == -1)
 					return (1);
+				state[socketserverfd] = "Server";
 				poll_fds[(*num_fds)].fd = socketserverfd;
 				poll_fds[(*num_fds)].events = POLLIN;
 				(*num_fds)++;
@@ -113,7 +114,7 @@ static int GetClientInfos(struct pollfd *poll_fds, int i, char *s, uint16_t *por
 	return (0);
 }
 
-static int NewClientConnexion(struct pollfd *poll_fds, int i,	int *num_fds)
+static int NewClientConnexion(struct pollfd *poll_fds, int i, int *num_fds, std::map<int, std::string> &state)
 {
 	struct sockaddr_storage their_addr;
 	socklen_t their_size = sizeof(their_addr);
@@ -126,20 +127,31 @@ static int NewClientConnexion(struct pollfd *poll_fds, int i,	int *num_fds)
 	}
 	inet_ntop(their_addr.ss_family, &(((struct sockaddr_in*)&their_addr)->sin_addr), s, sizeof s);
 	// std::cout << "server: got connection from " << std::string(s) << std::endl;
+	state[poll_fds[i].fd] = "Client";
 	poll_fds[(*num_fds)].fd = new_fd;
 	poll_fds[(*num_fds)].events = POLLIN;
 	(*num_fds)++;
 	return 0;
 }
 
+static int IsACgiFile(std::map<int, std::string> state, int fd)
+{
+	std::map<int, std::string>::iterator it = state.find(fd);
+	if (it != state.end() && it->second == "Cgi")
+		return (1);
+	return (0);
+}
+
 int	Config::ServerStart(char **envp)
 {
 	char s[INET6_ADDRSTRLEN];
+	int num_srvs = 0;
 	struct pollfd poll_fds[CONNECTIONS];
 	int num_fds = 0;
-	int num_srvs = 0;
+	std::map<int, std::string> state;
+	s_updatepoll test(state, &num_fds, poll_fds);
 
-	if (FillPollFd(poll_fds, &num_fds) == 1)
+	if (FillPollFd(poll_fds, &num_fds, state) == 1)
 		return (1);
 	// std::cout <<"survive \n";
 	num_srvs = num_fds;
@@ -162,52 +174,68 @@ int	Config::ServerStart(char **envp)
 			{
 				if (i < num_srvs)
 				{
-					if (NewClientConnexion(poll_fds, i, &num_fds) == 1)
+					if (NewClientConnexion(poll_fds, i, &num_fds, state) == 1)
 						return 1;
 				}
 				else
 				{
 					uint16_t	port;
+					(void)envp;
+					/*if (IsACgiFile(state, poll_fds[i].fd))
+					{
+						char		cgi_output[4096];
+						int			rd;
+						std::string	output;
+						while ((rd = read(poll_fds[i].fd, cgi_output, sizeof(cgi_output) - 1)) > 0)
+						{
+							if (rd > 0)
+							{
+								cgi_output[rd] = '\0';
+								output += cgi_output;
+							}
+							end = std::time(NULL);
+							if (difftime(end, start) > 10)
+								throw RequestClient::ErrorRequest(504, "./not_found/504.html", "Gateway Timeout");
+						}
+						if (rd == -1)
+						{
+							std::cerr << "Error: read: " << strerror(errno) << std::endl;
+							return ;
+						}
+					}
+					else
+					{*/
 					if (GetClientInfos(poll_fds, i, s, &port) == 1)
 						return (1);
 					std::cout << "server is :" << s << " " << port << std::endl;
-					//read
-					this->processClientRequest(poll_fds[i].fd, std::string(s), port);
-					//rajouter les cgi dans poll_fds
-					(void)envp;
-					/*si cgi pollfd
-					{
-						lire le cgi
-					}*/
-					//poll_fds[i].revents = POLLOUT;
-					close(poll_fds[i].fd);
-					poll_fds[i] = poll_fds[num_fds - 1]; 
-					num_fds--;
+					this->processClientRequest(poll_fds[i].fd, std::string(s), port, state, poll_fds);
+					//}
+					poll_fds[i].revents = POLLOUT;
 				}
 			}
-			/*else if (poll_fds[i].revents & POLLOUT)
+			else if (poll_fds[i].revents & POLLOUT)
 			{
-				send response 
-				check si cgi poll fd si cgi poll fd 
+			/*	if (IsACgiFile(state, poll_fds[i].fd))
 				{
-					send reponse
+					this->bodyClient;
 				}
-				sinn 
-				if (send(clientFd, response.c_str(), response.length(), 0) == -1)
+				else
 				{
-					std::cerr << "Error: send: " << strerror(errno) << std::endl;
-					return ;
-				}
+					Response	rep(req, this->bodyClient, this->_servers, host, port);
+					std::string	response = rep.getFull();*/
+				//}
+				this->responseClient(poll_fds[i].fd, this->response);
+				state.erase(poll_fds[i].fd);
 				close(poll_fds[i].fd);
 				poll_fds[i] = poll_fds[num_fds - 1]; 
 				num_fds--;
-			}*/
+			}
 		}
 	}
 	return (0);
 }
 
-void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
+void	Config::processClientRequest(int clientFd, std::string host, uint16_t port, s_updatepoll& poll_data)
 {
 	int				rd;
 	char			buffer[8192] = {0};
@@ -275,14 +303,14 @@ void	Config::processClientRequest(int clientFd, std::string host, uint16_t port)
 			}
 			// if (body.find("\r\n") != std::string::npos)
 			// 	body = body.substr(0, body.find("\r\n"));
-			Response	rep( req, this->bodyClient, this->_servers, host, port );
-			std::string	response = rep.getFull();
 			// if (send(clientFd, response.c_str(), response.length(), 0) == -1)
 			// {
 			// 	std::cerr << "Error: send: " << strerror(errno) << std::endl;
 			// 	return ;
 			// }
-			this->responseClient(clientFd, response);
+			Response	rep( req, this->bodyClient, this->_servers, host, port, poll_data);
+			this->response = rep.getFull();
+			//this->responseClient(clientFd, response);
 			break ;
 		}
 	}

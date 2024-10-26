@@ -19,7 +19,7 @@ class Config
 		int	ServerStart(char **envp);
 		int	IsACgi();
 
-		int					FillPollFd(struct pollfd *poll_fds, int *num_fds);
+		int					FillPollFd(struct pollfd *poll_fds, int *num_fds, std::map<int, std::string> &state);
 		int					ServerNameByServer();
 		void				AddServer(Server *server); // rajoute un simpel server aux servers
 		void				AddServer();
@@ -46,7 +46,8 @@ class Config
 		std::string				_filename;
 		std::vector<Server*>	_servers;
 		std::string				bodyClient;
-		void				processClientRequest( int, std::string, uint16_t );
+		std::string				response;
+		void				processClientRequest( int, std::string, uint16_t , s_updatepoll&);
 		std::string			processChunkedBody( std::string& );
 		void				responseClient( int , std::string );
 };

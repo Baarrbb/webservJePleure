@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 17:36:45 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/24 22:53:36 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/26 02:02:11 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ class Response
 {
 	public:
 		// Response( RequestClient, std::vector<Server*>, std::string, uint16_t );
-		Response( RequestClient, std::string, std::vector<Server*>, std::string, uint16_t );
+		Response( RequestClient, std::string, std::vector<Server*>, std::string, uint16_t , s_updatepoll&);
 		~Response( void );
 
 		std::string	getFull( void );

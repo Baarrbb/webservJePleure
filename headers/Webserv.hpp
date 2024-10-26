@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 16:42:39 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/24 18:57:48 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/26 02:07:05 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,15 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <poll.h>
+
+struct s_updatepoll {
+	std::map<int, std::string>& state;
+	int* num_fds;
+	struct pollfd (&poll_fds)[1024];
+	s_updatepoll(std::map<int, std::string>& st, int* nfds, struct pollfd (&p_fds)[1024])
+		: state(st), num_fds(nfds), poll_fds(p_fds) {}
+};
+
 
 #include "Server.hpp"
 #include "Config.hpp"

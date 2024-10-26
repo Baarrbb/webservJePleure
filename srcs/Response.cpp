@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 18:00:18 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/25 01:00:13 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/26 02:02:44 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
 // Response::Response( RequestClient req, std::vector<Server*> serv, std::string host, uint16_t port )
-Response::Response( RequestClient req, std::string bodyClient, std::vector<Server*> serv, std::string host, uint16_t port )
+Response::Response( RequestClient req, std::string bodyClient, std::vector<Server*> serv, std::string host, uint16_t port , s_updatepoll& poll_data)
 	: version("HTTP/1.1"), isCGI(false), bodyClient(bodyClient)
 {
 	Server		server;
@@ -42,7 +42,7 @@ Response::Response( RequestClient req, std::string bodyClient, std::vector<Serve
 			if (isCGI)
 			{
 				loc = this->findLocation(server, this->file);
-				CGI callCGI(req, loc, bodyClient, this->file, this->pathInfo, this->dir);
+				CGI callCGI(req, loc, bodyClient, this->file, this->pathInfo, this->dir, poll_data);
 				this->cgiBody = callCGI.getBodyResponse();
 				this->cgiHeaders = callCGI.getHeadResponse();
 			}

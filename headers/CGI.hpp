@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.hpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 14:38:40 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/21 20:46:21 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/26 02:04:27 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 class CGI
 {
 	public:
-		CGI( RequestClient, Location, std::string, std::string, std::string, std::string );
+		CGI( RequestClient, Location, std::string, std::string, std::string, std::string, s_updatepoll&);
 		~CGI( void );
 
 		std::string	getBodyResponse( void ) const;
@@ -40,7 +40,7 @@ class CGI
 		void	addEnvp( RequestClient );
 		void	toCGI( std::string, RequestClient, int fd[2], int fds[2]);
 		void	getReturnCGI( RequestClient, int fd[2], int fds[2], int );
-		void	handleCGI(std::string, RequestClient);
+		void	handleCGI(std::string, RequestClient, s_updatepoll& poll_data);
 
 		std::vector<std::string>	env;
 	

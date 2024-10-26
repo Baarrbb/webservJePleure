@@ -3,23 +3,23 @@
 /*                                                        :::      ::::::::   */
 /*   CGI.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
+/*   By: ersees <ersees@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/20 14:39:02 by marvin            #+#    #+#             */
-/*   Updated: 2024/10/25 18:49:32 by marvin           ###   ########.fr       */
+/*   Updated: 2024/10/26 02:16:50 by ersees           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
 
-CGI::CGI(RequestClient req, Location serv, std::string bodyClient, std::string scriptPath, std::string pathInfo, std::string dir)
+CGI::CGI(RequestClient req, Location serv, std::string bodyClient, std::string scriptPath, std::string pathInfo, std::string dir, s_updatepoll& poll_data)
 	: bodyClient(bodyClient), scriptPath(scriptPath), pathInfo(pathInfo), dir(dir)
 {
 	this->cgiPass = serv.GetCgiPass();
 	this->method = req.getMethod();
 
 	this->addEnvp(req);
-	this->handleCGI(scriptPath, req);
+	this->handleCGI(scriptPath, req, poll_data);
 }
 
 CGI::~CGI( void )
@@ -159,7 +159,7 @@ void	CGI::getReturnCGI( RequestClient req, int pipefd[2], int pipefd_stdin[2], i
 	close(pipefd[0]);
 }
 
-void	CGI::handleCGI(std::string filename, RequestClient req)
+void	CGI::handleCGI(std::string filename, RequestClient req, s_updatepoll& poll_data)
 {
 	int	pipefd[2];
 	int	pid;
@@ -179,6 +179,16 @@ void	CGI::handleCGI(std::string filename, RequestClient req)
 		close(pipefd_stdin[1]);
 		return ;
 	}
+	poll_data.state[pipefd_stdin[1]] = "CGI";
+	poll_data.poll_fds[*poll_data.num_fds].fd = pipefd_stdin[1];
+	poll_data.poll_fds[*poll_data.num_fds].events = POLLIN;
+	(*poll_data.num_fds)++;
+
+	// Add pipefd[0] to poll_fds for reading from the child process
+	poll_data.state[pipefd[0]] = "CGI";
+	poll_data.poll_fds[*poll_data.num_fds].fd = pipefd[0];
+	poll_data.poll_fds[*poll_data.num_fds].events = POLLIN;
+	(*poll_data.num_fds)++;
 	if (pid == 0)
 		this->toCGI(filename, req, pipefd, pipefd_stdin);
 	if (pid > 0)
